@@ -1,0 +1,45 @@
+# requirements.txt for AI agent development
+# REVISE AND UPDATE - PASTED FROM GROK
+
+# Core AI and machine learning frameworks
+langgraph>=0.2.14  # Framework for building stateful, graph-based AI agents
+langchain>=0.2.0  # For building context-aware AI applications
+openai>=1.14.0  # OpenAI API for leveraging GPT models
+transformers>=4.44.0  # Hugging Face transformers for NLP models
+torch>=2.4.0  # PyTorch for deep learning models
+tensorflow>=2.17.0  # TensorFlow for machine learning (optional alternative to PyTorch)
+
+# Agent memory and context management
+faiss-cpu>=1.8.0  # For efficient vector search and memory storage
+pinecone-client>=5.0.0  # Vector database for scalable memory
+chromadb>=0.5.0  # Open-source vector database for embeddings
+
+# Data processing and utilities
+pandas>=2.2.0  # Data manipulation and analysis
+numpy>=1.26.0  # Numerical computations
+requests>=2.31.0  # HTTP requests for API interactions
+pydantic>=2.7.0  # Data validation and settings management
+pyyaml>=6.0.1  # YAML parsing for configuration files
+
+# Natural language processing and embeddings
+sentence-transformers>=3.0.0  # For generating text embeddings
+spacy>=3.7.0  # NLP library for tokenization, NER, etc.
+nltk>=3.8.1  # Natural Language Toolkit for text processing
+
+# Asynchronous and event-driven programming
+aiohttp>=3.9.0  # Asynchronous HTTP client/server framework
+asyncio>=3.4.3  # Python's built-in async library (included in Python)
+
+# Tools for agent orchestration and workflows
+crewai>=0.55.0  # Framework for multi-agent systems
+autogen>=0.2.0  # Framework for building conversational AI agents
+
+# Environment and configuration management
+python-dotenv>=1.0.0  # For managing environment variables
+
+# Optional: For building interactive interfaces (e.g., for testing agents)
+streamlit>=1.35.0  # For creating web-based interfaces
+gradio>=4.44.0  # For building interactive UI for AI models
+
+# Optional: For logging and monitoring
+loguru>=0.7.0  # Simplified logging for debugging agents
