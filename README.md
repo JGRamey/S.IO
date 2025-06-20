@@ -16,7 +16,7 @@ A comprehensive spiritual text analysis system powered by **local AI models** in
 
 ### Prerequisites
 
-- Python 3.11+ (required for TensorFlow compatibility)
+- Python 3.12+ (required for latest TensorFlow and optimal performance)
 - Docker and Docker Compose (optional but recommended)
 - Git
 

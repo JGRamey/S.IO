@@ -1,0 +1,53 @@
+{
+  "requests": [
+    {
+      "text_type": "bible",
+      "passage": {
+        "book": "genesis",
+        "chapter": 1,
+        "verse_start": 1,
+        "verse_end": 10,
+        "version": "NIV"
+      }
+    },
+    {
+      "text_type": "bible",
+      "passage": {
+        "book": "matthew",
+        "chapter": 5,
+        "verse_start": 1,
+        "verse_end": 12,
+        "version": "ESV"
+      }
+    },
+    {
+      "text_type": "quran",
+      "verses": {
+        "surah": 1,
+        "verse_start": 1,
+        "verse_end": 7,
+        "translations": ["en.sahih", "en.pickthall"],
+        "include_arabic": true
+      }
+    },
+    {
+      "text_type": "bhagavad_gita",
+      "verses": {
+        "chapter": 2,
+        "verse_start": 1,
+        "verse_end": 10,
+        "include_sanskrit": true,
+        "include_commentary": false
+      }
+    },
+    {
+      "text_type": "dhammapada",
+      "verses": {
+        "chapter": 1,
+        "verse_start": 1,
+        "verse_end": 20,
+        "include_pali": true
+      }
+    }
+  ]
+}

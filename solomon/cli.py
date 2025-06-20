@@ -15,6 +15,8 @@ from rich.syntax import Syntax
 from solomon.config import settings
 from solomon.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
 from solomon.database import DatabaseManager
+from solomon.database.models import TextType
+from solomon.scraping.scraping_manager import ScrapingManager
 
 app = typer.Typer(
     name="solomon",
@@ -417,6 +419,318 @@ def config():
         table.add_row(setting, str(value))
     
     console.print(table)
+
+
+@app.command()
+def scrape(
+    text_types: Optional[List[str]] = typer.Option(None, "--types", "-t", help="Text types to scrape (bible, quran, bhagavad_gita, upanishads, dhammapada)"),
+    bible_books: Optional[List[str]] = typer.Option(None, "--bible-books", help="Bible books to scrape"),
+    bible_versions: Optional[List[str]] = typer.Option(None, "--bible-versions", help="Bible versions to scrape"),
+    quran_surahs: Optional[List[int]] = typer.Option(None, "--quran-surahs", help="Quran surahs to scrape"),
+    gita_chapters: Optional[List[int]] = typer.Option(None, "--gita-chapters", help="Bhagavad Gita chapters to scrape"),
+    dhammapada_chapters: Optional[List[int]] = typer.Option(None, "--dhammapada-chapters", help="Dhammapada chapters to scrape"),
+    include_sanskrit: bool = typer.Option(True, "--sanskrit/--no-sanskrit", help="Include Sanskrit texts"),
+    include_arabic: bool = typer.Option(True, "--arabic/--no-arabic", help="Include Arabic texts"),
+    include_pali: bool = typer.Option(True, "--pali/--no-pali", help="Include Pali texts"),
+    min_quality: float = typer.Option(0.3, "--min-quality", help="Minimum quality score for texts"),
+    max_texts: int = typer.Option(100, "--max-texts", help="Maximum texts per type"),
+    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Export scraped data to file"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
+):
+    """Scrape spiritual texts from online sources and add to database."""
+    
+    # Default text types if none specified
+    if not text_types:
+        text_types = ["bible", "quran", "bhagavad_gita"]
+    
+    # Validate text types
+    valid_types = ["bible", "quran", "bhagavad_gita", "upanishads", "dhammapada"]
+    invalid_types = [t for t in text_types if t not in valid_types]
+    if invalid_types:
+        console.print(f"[red]Error: Invalid text types: {', '.join(invalid_types)}[/red]")
+        console.print(f"Valid types: {', '.join(valid_types)}")
+        raise typer.Exit(1)
+    
+    # Convert to TextType enums
+    type_mapping = {
+        "bible": TextType.BIBLE,
+        "quran": TextType.QURAN,
+        "bhagavad_gita": TextType.BHAGAVAD_GITA,
+        "upanishads": TextType.UPANISHADS,
+        "dhammapada": TextType.DHAMMAPADA
+    }
+    
+    selected_types = [type_mapping[t] for t in text_types]
+    
+    console.print(f"[green]Starting scraping for: {', '.join(text_types)}[/green]")
+    
+    # Run scraping
+    asyncio.run(_run_scraping(
+        selected_types,
+        bible_books=bible_books,
+        bible_versions=bible_versions,
+        quran_surahs=quran_surahs,
+        gita_chapters=gita_chapters,
+        dhammapada_chapters=dhammapada_chapters,
+        include_sanskrit=include_sanskrit,
+        include_arabic=include_arabic,
+        include_pali=include_pali,
+        min_quality=min_quality,
+        max_texts=max_texts,
+        output=output,
+        verbose=verbose
+    ))
+
+
+async def _run_scraping(
+    text_types: List[TextType],
+    bible_books: Optional[List[str]] = None,
+    bible_versions: Optional[List[str]] = None,
+    quran_surahs: Optional[List[int]] = None,
+    gita_chapters: Optional[List[int]] = None,
+    dhammapada_chapters: Optional[List[int]] = None,
+    include_sanskrit: bool = True,
+    include_arabic: bool = True,
+    include_pali: bool = True,
+    min_quality: float = 0.3,
+    max_texts: int = 100,
+    output: Optional[Path] = None,
+    verbose: bool = False
+):
+    """Run the scraping process asynchronously."""
+    
+    try:
+        # Initialize database manager
+        db_manager = DatabaseManager()
+        await db_manager.initialize()
+        
+        # Initialize scraping manager
+        scraping_manager = ScrapingManager(db_manager)
+        
+        # Create scraping configuration
+        config = scraping_manager.create_scraping_config(
+            text_types,
+            bible_books=bible_books or ['genesis', 'matthew', 'john'],
+            bible_versions=bible_versions or ['NIV', 'ESV'],
+            quran_surahs=quran_surahs or list(range(1, 6)),
+            gita_chapters=gita_chapters or list(range(1, 4)),
+            dhammapada_chapters=dhammapada_chapters or list(range(1, 4)),
+            include_sanskrit=include_sanskrit,
+            include_arabic=include_arabic,
+            include_pali=include_pali,
+            min_quality=min_quality,
+            max_texts_per_type=max_texts
+        )
+        
+        if verbose:
+            console.print("[blue]Scraping configuration:[/blue]")
+            console.print(json.dumps(config, indent=2, default=str))
+        
+        # Run scraping with progress indicator
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("Scraping texts...", total=None)
+            
+            results = await scraping_manager.scrape_and_store(text_types, config)
+            
+            progress.update(task, description="Scraping completed!")
+        
+        # Display results
+        _display_scraping_results(results, verbose)
+        
+        # Export data if requested
+        if output:
+            export_path = await scraping_manager.export_scraped_data(
+                str(output), text_types, 'json'
+            )
+            console.print(f"[green]Data exported to: {export_path}[/green]")
+        
+    except Exception as e:
+        console.print(f"[red]Error during scraping: {str(e)}[/red]")
+        if verbose:
+            import traceback
+            console.print(traceback.format_exc())
+        raise typer.Exit(1)
+
+
+def _display_scraping_results(results: dict, verbose: bool = False):
+    """Display scraping results in a formatted way."""
+    
+    # Summary panel
+    summary_text = f"""
+    [green]✓[/green] Scraping completed successfully
+    [blue]Started:[/blue] {results['started_at']}
+    [blue]Completed:[/blue] {results['completed_at']}
+    [blue]Text Types:[/blue] {', '.join(results['text_types'])}
+    """
+    
+    console.print(Panel(summary_text, title="Scraping Summary", border_style="green"))
+    
+    # Results table
+    table = Table(title="Scraping Results")
+    table.add_column("Text Type", style="cyan")
+    table.add_column("Scraped", justify="right", style="yellow")
+    table.add_column("Saved", justify="right", style="green")
+    
+    total_scraped = sum(results['scraped_counts'].values())
+    total_saved = results['saved_counts'].get('total', 0)
+    
+    for text_type in results['text_types']:
+        scraped_count = results['scraped_counts'].get(text_type, 0)
+        table.add_row(text_type, str(scraped_count), "")
+    
+    table.add_row("", "", "")  # Separator
+    table.add_row("TOTAL", str(total_scraped), str(total_saved))
+    
+    console.print(table)
+    
+    # Processing stats
+    if 'processing_stats' in results and results['processing_stats']:
+        stats = results['processing_stats']
+        
+        stats_text = f"""
+        [blue]Total Texts Processed:[/blue] {stats.get('total_texts', 0)}
+        [blue]Total Words:[/blue] {stats.get('total_words', 0):,}
+        [blue]Average Words per Text:[/blue] {stats.get('average_words_per_text', 0):.1f}
+        [blue]Average Quality Score:[/blue] {stats.get('average_quality_score', 0):.2f}
+        [blue]High Quality Texts:[/blue] {stats.get('high_quality_texts', 0)}
+        """
+        
+        console.print(Panel(stats_text, title="Processing Statistics", border_style="blue"))
+        
+        # Theme distribution
+        if verbose and 'theme_distribution' in stats:
+            theme_table = Table(title="Theme Distribution")
+            theme_table.add_column("Theme", style="cyan")
+            theme_table.add_column("Count", justify="right", style="yellow")
+            
+            for theme, count in sorted(stats['theme_distribution'].items(), key=lambda x: x[1], reverse=True):
+                theme_table.add_row(theme, str(count))
+            
+            console.print(theme_table)
+    
+    # Errors
+    if results.get('errors'):
+        console.print(f"\n[yellow]Warnings/Errors ({len(results['errors'])}):[/yellow]")
+        for error in results['errors'][:5]:  # Show first 5 errors
+            console.print(f"  • {error}")
+        
+        if len(results['errors']) > 5:
+            console.print(f"  ... and {len(results['errors']) - 5} more")
+
+
+@app.command()
+def scrape_status():
+    """Show current status of scraped texts in database."""
+    asyncio.run(_show_scraping_status())
+
+
+async def _show_scraping_status():
+    """Show scraping status asynchronously."""
+    try:
+        # Initialize database manager
+        db_manager = DatabaseManager()
+        await db_manager.initialize()
+        
+        # Initialize scraping manager
+        scraping_manager = ScrapingManager(db_manager)
+        
+        # Get status
+        status = await scraping_manager.get_scraping_status()
+        
+        # Display status
+        console.print(Panel(f"[green]Database Status[/green]\n[blue]Total Texts:[/blue] {status['total_texts']}\n[blue]Recent Additions:[/blue] {status['recent_additions']}", title="Scraping Status"))
+        
+        # Texts by type table
+        table = Table(title="Texts by Type")
+        table.add_column("Text Type", style="cyan")
+        table.add_column("Count", justify="right", style="yellow")
+        
+        for text_type, count in status['texts_by_type'].items():
+            table.add_row(text_type, str(count))
+        
+        console.print(table)
+        
+        # Supported types
+        console.print(f"\n[blue]Supported Text Types:[/blue] {', '.join(status['supported_types'])}")
+        
+    except Exception as e:
+        console.print(f"[red]Error getting status: {str(e)}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command()
+def scrape_specific(
+    config_file: Path = typer.Argument(..., help="JSON configuration file for specific scraping requests"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
+):
+    """Scrape specific texts based on detailed configuration file."""
+    
+    if not config_file.exists():
+        console.print(f"[red]Error: Configuration file {config_file} not found[/red]")
+        raise typer.Exit(1)
+    
+    try:
+        with open(config_file, 'r') as f:
+            config = json.load(f)
+    except json.JSONDecodeError as e:
+        console.print(f"[red]Error parsing configuration file: {str(e)}[/red]")
+        raise typer.Exit(1)
+    
+    if 'requests' not in config:
+        console.print("[red]Error: Configuration file must contain 'requests' array[/red]")
+        raise typer.Exit(1)
+    
+    console.print(f"[green]Processing {len(config['requests'])} scraping requests[/green]")
+    
+    # Run specific scraping
+    asyncio.run(_run_specific_scraping(config['requests'], verbose))
+
+
+async def _run_specific_scraping(requests: List[dict], verbose: bool = False):
+    """Run specific scraping requests asynchronously."""
+    try:
+        # Initialize database manager
+        db_manager = DatabaseManager()
+        await db_manager.initialize()
+        
+        # Initialize scraping manager
+        scraping_manager = ScrapingManager(db_manager)
+        
+        # Run scraping with progress indicator
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("Processing requests...", total=None)
+            
+            results = await scraping_manager.scrape_specific_texts(requests)
+            
+            progress.update(task, description="Processing completed!")
+        
+        # Display results
+        console.print(Panel(
+            f"[green]✓[/green] Processed {results['requests_processed']} requests\n"
+            f"[blue]Texts Scraped:[/blue] {results['texts_scraped']}\n"
+            f"[blue]Texts Saved:[/blue] {results['texts_saved']}",
+            title="Specific Scraping Results"
+        ))
+        
+        if results.get('errors') and verbose:
+            console.print(f"\n[yellow]Errors ({len(results['errors'])}):[/yellow]")
+            for error in results['errors']:
+                console.print(f"  • {error}")
+        
+    except Exception as e:
+        console.print(f"[red]Error during specific scraping: {str(e)}[/red]")
+        if verbose:
+            import traceback
+            console.print(traceback.format_exc())
+        raise typer.Exit(1)
 
 
 def main():

@@ -7,7 +7,7 @@ name = "solomon-sophia"
 version = "0.1.0"
 description = "AI-powered analysis of spiritual and religious texts to uncover universal truths"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
     {name = "Solomon Project Team"},
@@ -17,8 +17,8 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
