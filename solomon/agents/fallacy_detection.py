@@ -1,4 +1,4 @@
-"""Fallacy detection agent for identifying logical fallacies in spiritual texts."""
+"""Enhanced fallacy detection agent for identifying logical fallacies in spiritual texts with RAG integration."""
 
 import re
 import json
@@ -31,7 +31,7 @@ class DetectedFallacy(BaseModel):
 
 
 class FallacyDetectionAgent(BaseAgent):
-    """Agent for detecting logical fallacies in spiritual and religious texts."""
+    """Enhanced agent for detecting logical fallacies in spiritual and religious texts with RAG integration."""
     
     FALLACY_TYPES = {
         "ad_hominem": FallacyType(
@@ -79,354 +79,593 @@ class FallacyDetectionAgent(BaseAgent):
             ],
             keywords=["because it says", "proves itself", "self-evident"]
         ),
-        "appeal_to_tradition": FallacyType(
-            name="Appeal to Tradition",
-            description="Claiming something is true or good because it's traditional",
+        "appeal_to_emotion": FallacyType(
+            name="Appeal to Emotion",
+            description="Using emotional manipulation instead of logical reasoning",
             examples=[
-                "We've always done it this way",
-                "Our ancestors believed it, so it must be right"
+                "If you don't believe, you'll suffer eternally",
+                "Think of how this will hurt your family"
             ],
-            keywords=["always done", "tradition", "ancestors", "ancient wisdom"]
+            keywords=["suffer", "hurt", "fear", "think of", "emotional"]
         ),
-        "slippery_slope": FallacyType(
-            name="Slippery Slope",
-            description="Claiming that one event will lead to extreme consequences without evidence",
+        "bandwagon": FallacyType(
+            name="Bandwagon",
+            description="Claiming something is true because many people believe it",
             examples=[
-                "If we allow questioning, all faith will be destroyed",
-                "Any change will lead to complete moral collapse"
+                "Millions of believers can't be wrong",
+                "Everyone in our community believes this"
             ],
-            keywords=["will lead to", "inevitable", "slippery slope", "domino effect"]
-        ),
-        "appeal_to_fear": FallacyType(
-            name="Appeal to Fear",
-            description="Using fear rather than logic to persuade",
-            examples=[
-                "If you don't believe, you'll be punished eternally",
-                "Questioning will bring divine wrath"
-            ],
-            keywords=["punishment", "wrath", "consequences", "fear", "terrible fate"]
-        ),
-        "hasty_generalization": FallacyType(
-            name="Hasty Generalization",
-            description="Drawing broad conclusions from limited examples",
-            examples=[
-                "All non-believers are immoral",
-                "Every member of that faith is extremist"
-            ],
-            keywords=["all", "every", "always", "never", "everyone"]
+            keywords=["everyone", "millions", "most people", "popular", "majority"]
         ),
         "no_true_scotsman": FallacyType(
             name="No True Scotsman",
-            description="Dismissing counterexamples by redefining terms",
+            description="Dismissing counterexamples by redefining the group",
             examples=[
-                "No true believer would do that",
-                "Real followers wouldn't question"
+                "No true believer would act that way",
+                "Real Christians don't doubt"
             ],
-            keywords=["no true", "real", "genuine", "authentic"]
+            keywords=["no true", "real", "authentic", "genuine"]
         )
     }
     
     def __init__(self):
         super().__init__(
-            name="fallacy_detection",
-            description="Detects logical fallacies in spiritual and religious texts"
+            name="FallacyDetectionAgent",
+            description="Detects and analyzes logical fallacies in spiritual and religious texts with RAG capabilities",
+            enable_rag=True
         )
+        
+        # Build keyword index for efficient matching
+        self.keyword_index = self._build_keyword_index()
+        
+        # System prompt for fallacy detection
+        self.system_prompt = """You are an expert in logic, critical thinking, and argumentation analysis. 
+        Your task is to identify logical fallacies in spiritual and religious texts while being respectful and objective.
+        
+        When analyzing text for fallacies:
+        1. Identify specific logical fallacies present
+        2. Provide confidence scores based on clear evidence
+        3. Explain why the reasoning is fallacious
+        4. Distinguish between legitimate religious discourse and actual logical errors
+        5. Be respectful of religious beliefs while maintaining analytical rigor
+        6. Consider the historical and cultural context
+        
+        Focus on the logical structure of arguments, not the religious content itself."""
     
-    async def execute(self, input_data: Dict[str, Any]) -> AgentResult:
-        """Execute fallacy detection on provided text."""
+    def _build_keyword_index(self) -> Dict[str, List[str]]:
+        """Build keyword index for efficient fallacy matching."""
+        index = {}
+        
+        for fallacy_key, fallacy_type in self.FALLACY_TYPES.items():
+            for keyword in fallacy_type.keywords:
+                if keyword.lower() not in index:
+                    index[keyword.lower()] = []
+                index[keyword.lower()].append(fallacy_key)
+                
+        return index
+    
+    async def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> AgentResult:
+        """Process a fallacy detection query with RAG enhancement."""
         try:
-            text = input_data.get("text", "")
-            text_id = input_data.get("text_id")
-            context = input_data.get("context", "")
+            start_time = datetime.now()
             
-            if not text:
-                return self._create_result(
-                    success=False,
-                    error="Text parameter is required"
+            # Extract text from context or use query as text
+            text = context.get('text', query) if context else query
+            text_type = context.get('text_type') if context else None
+            
+            # Get relevant context using RAG if enabled
+            context_texts = []
+            if self.enable_rag and context and context.get('enable_rag', True):
+                context_texts = await self.get_context_texts(
+                    query=f"logical fallacy analysis: {query}",
+                    text_types=[text_type] if text_type else None,
+                    limit=3
                 )
             
-            # Detect fallacies using multiple methods
-            detected_fallacies = await self._detect_fallacies(text, context)
+            # Perform fallacy detection
+            fallacy_analysis = await self._analyze_fallacies(text, context_texts)
             
-            # Score and rank fallacies
-            ranked_fallacies = self._rank_fallacies(detected_fallacies)
+            # Store fallacy analysis results in database
+            if fallacy_analysis['fallacies']:
+                await self._store_fallacy_analysis(text, fallacy_analysis, context)
             
-            return self._create_result(
+            # Generate enhanced analysis with RAG if context available
+            if context_texts and fallacy_analysis['fallacies']:
+                enhanced_analysis = await self._enhance_with_rag(
+                    text, fallacy_analysis, context_texts
+                )
+                fallacy_analysis.update(enhanced_analysis)
+            
+            execution_time = (datetime.now() - start_time).total_seconds()
+            
+            return AgentResult(
                 success=True,
-                data={
-                    "text_id": text_id,
-                    "fallacies_detected": len(ranked_fallacies),
-                    "fallacies": [f.dict() for f in ranked_fallacies],
-                    "analysis_summary": self._create_summary(ranked_fallacies)
-                }
+                data=fallacy_analysis,
+                metadata={
+                    'agent_type': 'fallacy_detection',
+                    'text_length': len(text),
+                    'rag_context_used': len(context_texts),
+                    'fallacies_detected': len(fallacy_analysis.get('fallacies', []))
+                },
+                execution_time=execution_time,
+                sources=[
+                    {
+                        'title': ctx['title'],
+                        'source': ctx.get('source_url', ''),
+                        'text_type': ctx['text_type'],
+                        'similarity_score': ctx.get('similarity_score', 0.0)
+                    }
+                    for ctx in context_texts
+                ]
             )
             
         except Exception as e:
             self.logger.error(f"Fallacy detection failed: {e}")
-            return self._create_result(
+            return AgentResult(
                 success=False,
-                error=str(e)
+                error=str(e),
+                data={}
             )
     
-    async def _detect_fallacies(self, text: str, context: str = "") -> List[DetectedFallacy]:
-        """Detect fallacies using multiple detection methods."""
-        detected = []
+    async def _analyze_fallacies(self, text: str, context_texts: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Analyze text for logical fallacies."""
+        # Initial keyword-based detection
+        potential_fallacies = self._detect_potential_fallacies(text)
         
-        # Method 1: Keyword-based detection
-        keyword_fallacies = self._detect_by_keywords(text)
-        detected.extend(keyword_fallacies)
+        # Enhanced analysis with LLM
+        detected_fallacies = []
+        for fallacy_key in potential_fallacies:
+            fallacy_analysis = await self._analyze_specific_fallacy(text, fallacy_key, context_texts)
+            if fallacy_analysis:
+                detected_fallacies.append(fallacy_analysis)
         
-        # Method 2: Pattern-based detection
-        pattern_fallacies = self._detect_by_patterns(text)
-        detected.extend(pattern_fallacies)
-        
-        # Method 3: LLM-based detection
-        llm_fallacies = await self._detect_by_llm(text, context)
-        detected.extend(llm_fallacies)
+        # Pattern-based detection for common fallacy patterns
+        pattern_fallacies = await self._detect_pattern_fallacies(text, context_texts)
+        detected_fallacies.extend(pattern_fallacies)
         
         # Remove duplicates and merge similar detections
-        return self._merge_duplicate_detections(detected)
+        unique_fallacies = self._merge_similar_fallacies(detected_fallacies)
+        
+        # Generate analysis summary
+        analysis_summary = self._generate_analysis_summary(unique_fallacies)
+        
+        return {
+            'fallacies': unique_fallacies,
+            'analysis_summary': analysis_summary,
+            'total_fallacies_detected': len(unique_fallacies),
+            'fallacy_categories': self._categorize_fallacies(unique_fallacies)
+        }
     
-    def _detect_by_keywords(self, text: str) -> List[DetectedFallacy]:
-        """Detect fallacies using keyword matching."""
-        detected = []
+    def _detect_potential_fallacies(self, text: str) -> List[str]:
+        """Detect potential fallacies based on keyword matching."""
         text_lower = text.lower()
+        potential_fallacies = set()
         
-        for fallacy_type, fallacy_info in self.FALLACY_TYPES.items():
-            for keyword in fallacy_info.keywords:
-                if keyword.lower() in text_lower:
-                    # Find the sentence containing the keyword
-                    sentences = self._split_into_sentences(text)
-                    for sentence in sentences:
-                        if keyword.lower() in sentence.lower():
-                            detected.append(DetectedFallacy(
-                                fallacy_type=fallacy_type,
-                                description=fallacy_info.description,
-                                context=sentence,
-                                confidence_score=0.3,  # Low confidence for keyword matching
-                                text_excerpt=sentence,
-                                explanation=f"Keyword '{keyword}' suggests possible {fallacy_info.name}"
-                            ))
-                            break
+        for keyword, fallacy_keys in self.keyword_index.items():
+            if keyword in text_lower:
+                potential_fallacies.update(fallacy_keys)
         
-        return detected
+        return list(potential_fallacies)
     
-    def _detect_by_patterns(self, text: str) -> List[DetectedFallacy]:
-        """Detect fallacies using regex patterns."""
-        detected = []
+    async def _analyze_specific_fallacy(
+        self, 
+        text: str, 
+        fallacy_key: str, 
+        context_texts: List[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Analyze specific fallacy in text with LLM enhancement."""
+        fallacy_type = self.FALLACY_TYPES[fallacy_key]
         
-        # Pattern for false dichotomy
-        false_dichotomy_patterns = [
-            r"either\s+.+\s+or\s+.+",
-            r"only\s+two\s+.+",
-            r"must\s+choose\s+between\s+.+\s+and\s+.+",
-        ]
+        # Prepare context information
+        context_info = ""
+        if context_texts:
+            context_info = "\n\nRelevant context from similar texts:\n" + "\n".join([
+                f"- {ctx['title']}: {ctx['content'][:200]}..."
+                for ctx in context_texts[:2]
+            ])
         
-        for pattern in false_dichotomy_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                detected.append(DetectedFallacy(
-                    fallacy_type="false_dichotomy",
-                    description=self.FALLACY_TYPES["false_dichotomy"].description,
-                    context=self._get_sentence_containing_position(text, match.start()),
-                    confidence_score=0.5,
-                    text_excerpt=match.group(),
-                    explanation="Pattern suggests false dichotomy"
-                ))
+        prompt = f"""Analyze the following text for the logical fallacy "{fallacy_type.name}":
+
+Fallacy Definition:
+- Name: {fallacy_type.name}
+- Description: {fallacy_type.description}
+- Keywords: {', '.join(fallacy_type.keywords)}
+- Examples: {'; '.join(fallacy_type.examples)}
+
+Text to analyze:
+{text[:2000]}...
+
+{context_info}
+
+Please provide:
+1. Confidence score (0.0-1.0) that this fallacy is present
+2. Specific text excerpts that demonstrate the fallacy
+3. Explanation of why this constitutes the fallacy
+4. Context of the argument structure
+5. Severity assessment (minor, moderate, major)
+
+Format as JSON with keys: confidence_score, text_excerpts, explanation, context, severity"""
+        
+        try:
+            response = await self._generate_basic_response(prompt, self.system_prompt)
+            
+            # Parse JSON response
+            import json
+            try:
+                analysis = json.loads(response)
+                confidence = analysis.get('confidence_score', 0.0)
+                
+                # Only return if confidence is above threshold
+                if confidence >= 0.4:  # Higher threshold for fallacies to avoid false positives
+                    return {
+                        'fallacy_type': fallacy_type.name,
+                        'confidence_score': confidence,
+                        'text_excerpts': analysis.get('text_excerpts', []),
+                        'explanation': analysis.get('explanation', ''),
+                        'context': analysis.get('context', ''),
+                        'severity': analysis.get('severity', 'moderate'),
+                        'keywords_matched': [kw for kw in fallacy_type.keywords if kw.lower() in text.lower()]
+                    }
+            except json.JSONDecodeError:
+                # Fallback to simple parsing if JSON fails
+                confidence = self._extract_confidence_from_text(response)
+                if confidence >= 0.4:
+                    return {
+                        'fallacy_type': fallacy_type.name,
+                        'confidence_score': confidence,
+                        'text_excerpts': [],
+                        'explanation': response[:500],
+                        'context': 'Detected through keyword analysis',
+                        'severity': 'moderate',
+                        'keywords_matched': [kw for kw in fallacy_type.keywords if kw.lower() in text.lower()]
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error analyzing fallacy {fallacy_key}: {e}")
+            
+        return None
+    
+    async def _detect_pattern_fallacies(self, text: str, context_texts: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+        """Detect fallacies using pattern recognition."""
+        pattern_fallacies = []
         
         # Pattern for circular reasoning
         circular_patterns = [
-            r"because\s+it\s+says\s+so",
-            r"proves\s+itself",
-            r"self-evident",
+            r"because.*it says.*so",
+            r"proves itself",
+            r"self.*evident.*truth"
         ]
         
         for pattern in circular_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                detected.append(DetectedFallacy(
-                    fallacy_type="circular_reasoning",
-                    description=self.FALLACY_TYPES["circular_reasoning"].description,
-                    context=self._get_sentence_containing_position(text, match.start()),
-                    confidence_score=0.6,
-                    text_excerpt=match.group(),
-                    explanation="Pattern suggests circular reasoning"
-                ))
+            if re.search(pattern, text, re.IGNORECASE):
+                pattern_fallacies.append({
+                    'fallacy_type': 'Circular Reasoning',
+                    'confidence_score': 0.6,
+                    'text_excerpts': [self._extract_pattern_context(text, pattern)],
+                    'explanation': 'Detected circular reasoning pattern in argument structure',
+                    'context': 'Pattern-based detection',
+                    'severity': 'moderate',
+                    'keywords_matched': []
+                })
         
-        return detected
+        # Pattern for false dichotomy
+        dichotomy_patterns = [
+            r"either.*or",
+            r"only.*two.*choices",
+            r"must.*choose.*between"
+        ]
+        
+        for pattern in dichotomy_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                pattern_fallacies.append({
+                    'fallacy_type': 'False Dichotomy',
+                    'confidence_score': 0.5,
+                    'text_excerpts': [self._extract_pattern_context(text, pattern)],
+                    'explanation': 'Detected false dichotomy pattern limiting options artificially',
+                    'context': 'Pattern-based detection',
+                    'severity': 'moderate',
+                    'keywords_matched': []
+                })
+        
+        return pattern_fallacies
     
-    async def _detect_by_llm(self, text: str, context: str = "") -> List[DetectedFallacy]:
-        """Detect fallacies using LLM analysis."""
-        try:
-            system_prompt = """You are an expert in logic and critical thinking, specializing in identifying logical fallacies in religious and spiritual texts. 
-
-Your task is to analyze the provided text and identify any logical fallacies present. For each fallacy you detect, provide:
-1. The type of fallacy
-2. The specific text excerpt containing the fallacy
-3. An explanation of why it's a fallacy
-4. A confidence score (0.0 to 1.0)
-
-Focus on these common fallacies in religious discourse:
-- Ad Hominem: Attacking the person rather than the argument
-- Straw Man: Misrepresenting an opponent's position
-- False Dichotomy: Presenting only two options when more exist
-- Appeal to Authority: Claiming truth based solely on authority
-- Circular Reasoning: Using the conclusion to prove the premise
-- Appeal to Tradition: Claiming truth because it's traditional
-- Appeal to Fear: Using fear rather than logic
-- Hasty Generalization: Broad conclusions from limited examples
-- No True Scotsman: Dismissing counterexamples by redefining terms
-
-Respond in JSON format with an array of detected fallacies."""
-            
-            analysis_prompt = f"""Analyze this text for logical fallacies:
-
-Context: {context}
-
-Text to analyze:
-{text}
-
-Identify any logical fallacies and respond in this JSON format:
-{{
-  "fallacies": [
-    {{
-      "type": "fallacy_type",
-      "excerpt": "specific text containing the fallacy",
-      "explanation": "why this is a fallacy",
-      "confidence": 0.8
-    }}
-  ]
-}}"""
-            
-            response = await self._analyze_text(text, analysis_prompt, system_prompt)
-            
-            # Parse JSON response
-            try:
-                result = json.loads(response)
-                detected = []
-                
-                for fallacy in result.get("fallacies", []):
-                    fallacy_type = fallacy.get("type", "unknown")
-                    if fallacy_type in self.FALLACY_TYPES:
-                        detected.append(DetectedFallacy(
-                            fallacy_type=fallacy_type,
-                            description=self.FALLACY_TYPES[fallacy_type].description,
-                            context=fallacy.get("excerpt", ""),
-                            confidence_score=fallacy.get("confidence", 0.5),
-                            text_excerpt=fallacy.get("excerpt", ""),
-                            explanation=fallacy.get("explanation", "")
-                        ))
-                
-                return detected
-                
-            except json.JSONDecodeError:
-                self.logger.warning("Failed to parse LLM JSON response, attempting text parsing")
-                return self._parse_llm_text_response(response)
-                
-        except Exception as e:
-            self.logger.error(f"LLM fallacy detection failed: {e}")
+    def _extract_pattern_context(self, text: str, pattern: str) -> str:
+        """Extract context around a pattern match."""
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            start = max(0, match.start() - 100)
+            end = min(len(text), match.end() + 100)
+            return text[start:end].strip()
+        return ""
+    
+    def _extract_confidence_from_text(self, text: str) -> float:
+        """Extract confidence score from text response."""
+        import re
+        
+        # Look for confidence patterns
+        patterns = [
+            r'confidence[:\s]*([0-9]*\.?[0-9]+)',
+            r'score[:\s]*([0-9]*\.?[0-9]+)',
+            r'([0-9]*\.?[0-9]+)\s*(?:confidence|score)'
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text.lower())
+            if match:
+                try:
+                    score = float(match.group(1))
+                    return min(score, 1.0) if score <= 1.0 else score / 100.0
+                except (ValueError, IndexError):
+                    continue
+        
+        # Default confidence based on text content
+        strong_indicators = ['clearly', 'obvious', 'definite', 'certain', 'undoubtedly']
+        weak_indicators = ['possibly', 'might', 'unclear', 'uncertain', 'doubtful']
+        
+        strong_count = sum(1 for indicator in strong_indicators if indicator in text.lower())
+        weak_count = sum(1 for indicator in weak_indicators if indicator in text.lower())
+        
+        if strong_count > weak_count:
+            return 0.7
+        elif weak_count > strong_count:
+            return 0.3
+        else:
+            return 0.5
+    
+    def _merge_similar_fallacies(self, fallacies: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Merge similar fallacy detections to avoid duplicates."""
+        if not fallacies:
             return []
-    
-    def _parse_llm_text_response(self, response: str) -> List[DetectedFallacy]:
-        """Parse non-JSON LLM response for fallacies."""
-        detected = []
         
-        # Look for fallacy mentions in the response
-        for fallacy_type, fallacy_info in self.FALLACY_TYPES.items():
-            if fallacy_info.name.lower() in response.lower():
-                # Extract relevant context around the fallacy mention
-                lines = response.split('\n')
-                for line in lines:
-                    if fallacy_info.name.lower() in line.lower():
-                        detected.append(DetectedFallacy(
-                            fallacy_type=fallacy_type,
-                            description=fallacy_info.description,
-                            context=line,
-                            confidence_score=0.4,
-                            text_excerpt=line,
-                            explanation=f"LLM identified {fallacy_info.name}"
-                        ))
-                        break
-        
-        return detected
-    
-    def _merge_duplicate_detections(self, detected: List[DetectedFallacy]) -> List[DetectedFallacy]:
-        """Merge similar fallacy detections."""
         merged = []
+        processed_types = set()
         
-        for fallacy in detected:
-            # Check if we already have a similar detection
-            similar_found = False
-            for existing in merged:
-                if (existing.fallacy_type == fallacy.fallacy_type and 
-                    self._text_similarity(existing.text_excerpt, fallacy.text_excerpt) > 0.7):
-                    # Merge by taking the higher confidence score
-                    if fallacy.confidence_score > existing.confidence_score:
-                        existing.confidence_score = fallacy.confidence_score
-                        existing.explanation = fallacy.explanation
-                    similar_found = True
-                    break
+        for fallacy in sorted(fallacies, key=lambda x: x['confidence_score'], reverse=True):
+            fallacy_type = fallacy['fallacy_type']
             
-            if not similar_found:
-                merged.append(fallacy)
+            if fallacy_type not in processed_types:
+                # Find all fallacies of this type
+                same_type = [f for f in fallacies if f['fallacy_type'] == fallacy_type]
+                
+                if len(same_type) == 1:
+                    merged.append(fallacy)
+                else:
+                    # Merge multiple detections of the same type
+                    best_confidence = max(f['confidence_score'] for f in same_type)
+                    all_excerpts = []
+                    all_explanations = []
+                    
+                    for f in same_type:
+                        all_excerpts.extend(f.get('text_excerpts', []))
+                        all_explanations.append(f.get('explanation', ''))
+                    
+                    merged_fallacy = {
+                        'fallacy_type': fallacy_type,
+                        'confidence_score': best_confidence,
+                        'text_excerpts': list(set(all_excerpts))[:3],  # Limit to 3 unique excerpts
+                        'explanation': '; '.join(set(all_explanations)),
+                        'context': same_type[0].get('context', ''),
+                        'severity': same_type[0].get('severity', 'moderate'),
+                        'keywords_matched': list(set().union(*[f.get('keywords_matched', []) for f in same_type]))
+                    }
+                    merged.append(merged_fallacy)
+                
+                processed_types.add(fallacy_type)
         
         return merged
     
-    def _rank_fallacies(self, fallacies: List[DetectedFallacy]) -> List[DetectedFallacy]:
-        """Rank fallacies by confidence score and severity."""
-        # Sort by confidence score (descending)
-        return sorted(fallacies, key=lambda f: f.confidence_score, reverse=True)
-    
-    def _create_summary(self, fallacies: List[DetectedFallacy]) -> Dict[str, Any]:
-        """Create a summary of detected fallacies."""
-        if not fallacies:
-            return {"total": 0, "message": "No logical fallacies detected"}
-        
-        fallacy_counts = {}
-        total_confidence = 0
+    def _categorize_fallacies(self, fallacies: List[Dict[str, Any]]) -> Dict[str, List[str]]:
+        """Categorize fallacies by type for analysis."""
+        categories = {
+            'formal': [],
+            'informal': [],
+            'emotional': [],
+            'authority': []
+        }
         
         for fallacy in fallacies:
-            fallacy_counts[fallacy.fallacy_type] = fallacy_counts.get(fallacy.fallacy_type, 0) + 1
-            total_confidence += fallacy.confidence_score
+            fallacy_type = fallacy['fallacy_type']
+            
+            if fallacy_type in ['Circular Reasoning']:
+                categories['formal'].append(fallacy_type)
+            elif fallacy_type in ['Appeal to Emotion']:
+                categories['emotional'].append(fallacy_type)
+            elif fallacy_type in ['Appeal to Authority']:
+                categories['authority'].append(fallacy_type)
+            else:
+                categories['informal'].append(fallacy_type)
         
+        return {k: v for k, v in categories.items() if v}  # Remove empty categories
+    
+    def _generate_analysis_summary(self, fallacies: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Generate summary of fallacy analysis."""
+        if not fallacies:
+            return {
+                'total_fallacies': 0,
+                'average_confidence': 0.0,
+                'most_common_fallacy': None,
+                'overall_logical_quality': 'good'
+            }
+        
+        total_confidence = sum(f['confidence_score'] for f in fallacies)
+        fallacy_types = [f['fallacy_type'] for f in fallacies]
+        
+        # Count occurrences
+        from collections import Counter
+        type_counts = Counter(fallacy_types)
+        most_common = type_counts.most_common(1)[0] if type_counts else None
+        
+        # Assess overall logical quality
         avg_confidence = total_confidence / len(fallacies)
-        most_common = max(fallacy_counts.items(), key=lambda x: x[1])
+        if avg_confidence > 0.7 and len(fallacies) > 3:
+            quality = 'poor'
+        elif avg_confidence > 0.5 and len(fallacies) > 1:
+            quality = 'fair'
+        elif len(fallacies) == 0:
+            quality = 'good'
+        else:
+            quality = 'acceptable'
         
         return {
-            "total": len(fallacies),
-            "average_confidence": round(avg_confidence, 2),
-            "most_common_fallacy": most_common[0],
-            "fallacy_types": fallacy_counts,
-            "message": f"Detected {len(fallacies)} potential logical fallacies"
+            'total_fallacies': len(fallacies),
+            'average_confidence': avg_confidence,
+            'most_common_fallacy': most_common[0] if most_common else None,
+            'fallacy_distribution': dict(type_counts),
+            'overall_logical_quality': quality,
+            'high_confidence_fallacies': [
+                f['fallacy_type'] for f in fallacies if f['confidence_score'] > 0.7
+            ]
         }
     
-    def _split_into_sentences(self, text: str) -> List[str]:
-        """Split text into sentences."""
-        # Simple sentence splitting (could be improved with NLTK)
-        sentences = re.split(r'[.!?]+', text)
-        return [s.strip() for s in sentences if s.strip()]
+    async def _store_fallacy_analysis(
+        self, 
+        text: str, 
+        analysis: Dict[str, Any], 
+        context: Optional[Dict[str, Any]] = None
+    ):
+        """Store fallacy analysis results in the database."""
+        try:
+            # This will be implemented once we have the fallacy analysis table
+            # For now, we'll log the results
+            self.logger.info(f"Fallacy analysis completed: {len(analysis['fallacies'])} fallacies detected")
+            
+            # TODO: Implement database storage for fallacy analysis results
+            # This should store results in a separate table specifically for analysis results
+            
+        except Exception as e:
+            self.logger.error(f"Failed to store fallacy analysis: {e}")
     
-    def _get_sentence_containing_position(self, text: str, position: int) -> str:
-        """Get the sentence containing a specific character position."""
-        sentences = self._split_into_sentences(text)
-        current_pos = 0
+    async def _enhance_with_rag(
+        self, 
+        text: str, 
+        fallacy_analysis: Dict[str, Any], 
+        context_texts: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Enhance fallacy analysis with RAG insights."""
+        fallacies = fallacy_analysis.get('fallacies', [])
+        if not fallacies:
+            return {}
         
-        for sentence in sentences:
-            if current_pos <= position <= current_pos + len(sentence):
-                return sentence
-            current_pos += len(sentence) + 1  # +1 for the delimiter
+        # Generate comparative analysis
+        fallacy_types = [f['fallacy_type'] for f in fallacies]
         
-        return ""
+        query = f"Analyze the logical structure and fallacies in similar texts: {', '.join(fallacy_types)}"
+        
+        rag_response, citations = await self.generate_rag_response(
+            query=query,
+            context_texts=context_texts,
+            system_prompt=self.system_prompt
+        )
+        
+        return {
+            'rag_enhancement': {
+                'comparative_fallacy_analysis': rag_response,
+                'cross_textual_patterns': self._identify_cross_textual_patterns(fallacies, context_texts),
+                'logical_quality_comparison': self._compare_logical_quality(fallacies, context_texts)
+            }
+        }
     
-    def _text_similarity(self, text1: str, text2: str) -> float:
-        """Calculate simple text similarity."""
-        words1 = set(text1.lower().split())
-        words2 = set(text2.lower().split())
+    def _identify_cross_textual_patterns(
+        self, 
+        fallacies: List[Dict[str, Any]], 
+        context_texts: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Identify patterns across different texts."""
+        patterns = []
         
-        if not words1 or not words2:
-            return 0.0
+        fallacy_by_type = {}
+        for fallacy in fallacies:
+            ftype = fallacy['fallacy_type']
+            if ftype not in fallacy_by_type:
+                fallacy_by_type[ftype] = []
+            fallacy_by_type[ftype].append(fallacy)
         
-        intersection = words1.intersection(words2)
-        union = words1.union(words2)
+        for fallacy_type, type_fallacies in fallacy_by_type.items():
+            if len(type_fallacies) > 1:
+                patterns.append({
+                    'pattern_type': 'repeated_fallacy',
+                    'fallacy_type': fallacy_type,
+                    'description': f"Multiple instances of {fallacy_type} detected, suggesting systematic logical issues",
+                    'frequency': len(type_fallacies)
+                })
         
-        return len(intersection) / len(union) if union else 0.0
+        return patterns
+    
+    def _compare_logical_quality(
+        self, 
+        fallacies: List[Dict[str, Any]], 
+        context_texts: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Compare logical quality with context texts."""
+        current_quality = self._calculate_logical_quality_score(fallacies)
+        
+        return {
+            'current_logical_quality_score': current_quality,
+            'quality_assessment': self._assess_quality_level(current_quality),
+            'improvement_suggestions': self._generate_improvement_suggestions(fallacies)
+        }
+    
+    def _calculate_logical_quality_score(self, fallacies: List[Dict[str, Any]]) -> float:
+        """Calculate a logical quality score (0-100)."""
+        if not fallacies:
+            return 95.0
+        
+        # Start with perfect score and deduct for fallacies
+        score = 100.0
+        
+        for fallacy in fallacies:
+            confidence = fallacy['confidence_score']
+            severity = fallacy.get('severity', 'moderate')
+            
+            # Deduct points based on confidence and severity
+            if severity == 'major':
+                deduction = confidence * 15
+            elif severity == 'moderate':
+                deduction = confidence * 10
+            else:  # minor
+                deduction = confidence * 5
+            
+            score -= deduction
+        
+        return max(score, 0.0)
+    
+    def _assess_quality_level(self, score: float) -> str:
+        """Assess logical quality level based on score."""
+        if score >= 90:
+            return 'excellent'
+        elif score >= 75:
+            return 'good'
+        elif score >= 60:
+            return 'fair'
+        elif score >= 40:
+            return 'poor'
+        else:
+            return 'very_poor'
+    
+    def _generate_improvement_suggestions(self, fallacies: List[Dict[str, Any]]) -> List[str]:
+        """Generate suggestions for improving logical quality."""
+        if not fallacies:
+            return ["The text demonstrates good logical reasoning."]
+        
+        suggestions = []
+        fallacy_types = set(f['fallacy_type'] for f in fallacies)
+        
+        if 'Ad Hominem' in fallacy_types:
+            suggestions.append("Focus on addressing arguments rather than attacking individuals or groups.")
+        
+        if 'Straw Man' in fallacy_types:
+            suggestions.append("Ensure you're addressing opponents' actual positions, not simplified versions.")
+        
+        if 'False Dichotomy' in fallacy_types:
+            suggestions.append("Consider additional options beyond the presented alternatives.")
+        
+        if 'Circular Reasoning' in fallacy_types:
+            suggestions.append("Provide independent evidence rather than using conclusions as premises.")
+        
+        if 'Appeal to Authority' in fallacy_types:
+            suggestions.append("Support authoritative claims with additional evidence and reasoning.")
+        
+        if 'Appeal to Emotion' in fallacy_types:
+            suggestions.append("Balance emotional appeals with logical reasoning and evidence.")
+        
+        return suggestions

@@ -1,31 +1,37 @@
-"""Main scraping manager for orchestrating text collection and database operations."""
+"""Main scraping manager for orchestrating text collection and hybrid database operations."""
 
 import asyncio
 import logging
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Tuple
 from datetime import datetime
 from pathlib import Path
+import uuid
 
 from .scraper_factory import ScraperFactory
 from .text_processor import TextProcessor, ProcessedText
 from .base_scraper import ScrapedText
-from ..database.models import TextType, SpiritualText
-from ..database.connection import DatabaseManager
+from ..database.models import TextType, SpiritualText, FieldCategory, SubfieldCategory
+from ..database.connection import db_manager, get_qdrant
+from ..database.qdrant_manager import qdrant_manager
+from sqlalchemy import select
 
 
-class ScrapingManager:
-    """Manages the entire scraping workflow."""
+class HybridScrapingManager:
+    """Enhanced scraping manager for hybrid PostgreSQL + Qdrant database operations."""
     
-    def __init__(self, db_manager: DatabaseManager):
-        self.db_manager = db_manager
+    def __init__(self):
         self.scraper_factory = ScraperFactory()
         self.text_processor = TextProcessor()
         self.logger = logging.getLogger(self.__class__.__name__)
         
-    async def scrape_and_store(self, 
-                             text_types: List[TextType],
-                             scraping_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Scrape texts and store them in the database."""
+    async def initialize(self):
+        """Initialize the hybrid database system."""
+        await db_manager.initialize_hybrid_system()
+        
+    async def scrape_and_store_hybrid(self, 
+                                    text_types: List[TextType],
+                                    scraping_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Enhanced scraping with hybrid database storage (PostgreSQL + Qdrant)."""
         if scraping_config is None:
             scraping_config = {}
         
@@ -34,7 +40,9 @@ class ScrapingManager:
             'text_types': [tt.value for tt in text_types],
             'scraped_counts': {},
             'processed_counts': {},
-            'saved_counts': {},
+            'postgres_saved_counts': {},
+            'qdrant_saved_counts': {},
+            'embedding_stats': {},
             'errors': [],
             'processing_stats': {}
         }
@@ -44,20 +52,22 @@ class ScrapingManager:
         # Scrape texts for each type
         for text_type in text_types:
             try:
-                self.logger.info(f"Starting scraping for {text_type.value}")
+                self.logger.info(f"Starting hybrid scraping for {text_type.value}")
                 
                 # Create scraper
-                scraper = self.scraper_factory.create_scraper(text_type, self.db_manager)
+                scraper = self.scraper_factory.create_scraper(text_type, db_manager)
+                if not scraper:
+                    self.logger.warning(f"No scraper available for {text_type.value}")
+                    continue
                 
-                # Get type-specific config
-                type_config = scraping_config.get(text_type.value, {})
+                # Configure scraper
+                if text_type.value in scraping_config:
+                    scraper.configure(scraping_config[text_type.value])
                 
                 # Scrape texts
-                async with scraper:
-                    scraped_texts = await scraper.scrape_texts(**type_config)
-                
-                all_scraped_texts.extend(scraped_texts)
+                scraped_texts = await scraper.scrape()
                 results['scraped_counts'][text_type.value] = len(scraped_texts)
+                all_scraped_texts.extend(scraped_texts)
                 
                 self.logger.info(f"Scraped {len(scraped_texts)} texts for {text_type.value}")
                 
@@ -65,294 +75,239 @@ class ScrapingManager:
                 error_msg = f"Error scraping {text_type.value}: {str(e)}"
                 self.logger.error(error_msg)
                 results['errors'].append(error_msg)
-                results['scraped_counts'][text_type.value] = 0
         
-        # Process scraped texts
-        self.logger.info(f"Processing {len(all_scraped_texts)} scraped texts")
-        processed_texts = self.text_processor.process_texts(all_scraped_texts)
-        
-        # Filter by quality if specified
-        min_quality = scraping_config.get('min_quality', 0.3)
-        high_quality_texts = self.text_processor.filter_by_quality(processed_texts, min_quality)
-        
-        results['processed_counts']['total'] = len(processed_texts)
-        results['processed_counts']['high_quality'] = len(high_quality_texts)
-        
-        # Save to database
-        saved_ids = []
-        for processed_text in high_quality_texts:
-            try:
-                # Use the original scraper to save (it has the database logic)
-                text_type = processed_text.original.text_type
-                scraper = self.scraper_factory.create_scraper(text_type, self.db_manager)
-                
-                async with scraper:
-                    ids = await scraper.save_texts_to_db([processed_text.original])
-                    saved_ids.extend(ids)
-                
-            except Exception as e:
-                error_msg = f"Error saving text {processed_text.original.title}: {str(e)}"
-                self.logger.error(error_msg)
-                results['errors'].append(error_msg)
-        
-        results['saved_counts']['total'] = len(saved_ids)
-        results['processing_stats'] = self.text_processor.get_processing_stats(processed_texts)
-        results['completed_at'] = datetime.utcnow().isoformat()
-        
-        self.logger.info(f"Scraping completed. Saved {len(saved_ids)} texts to database")
-        
-        return results
-    
-    async def scrape_specific_texts(self, 
-                                  requests: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Scrape specific texts based on detailed requests."""
-        results = {
-            'started_at': datetime.utcnow().isoformat(),
-            'requests_processed': 0,
-            'texts_scraped': 0,
-            'texts_saved': 0,
-            'errors': []
-        }
-        
-        all_scraped_texts = []
-        
-        for request in requests:
-            try:
-                text_type = TextType(request['text_type'])
-                scraper = self.scraper_factory.create_scraper(text_type, self.db_manager)
-                
-                async with scraper:
-                    if text_type == TextType.BIBLE:
-                        texts = await self._scrape_bible_request(scraper, request)
-                    elif text_type == TextType.QURAN:
-                        texts = await self._scrape_quran_request(scraper, request)
-                    elif text_type == TextType.BHAGAVAD_GITA:
-                        texts = await self._scrape_gita_request(scraper, request)
-                    elif text_type == TextType.DHAMMAPADA:
-                        texts = await self._scrape_dhammapada_request(scraper, request)
-                    else:
-                        texts = await scraper.scrape_texts(**request.get('params', {}))
-                    
-                    all_scraped_texts.extend(texts)
-                    results['requests_processed'] += 1
-                    
-            except Exception as e:
-                error_msg = f"Error processing request {request}: {str(e)}"
-                self.logger.error(error_msg)
-                results['errors'].append(error_msg)
-        
-        results['texts_scraped'] = len(all_scraped_texts)
-        
-        # Process and save texts
+        # Process and store in hybrid database
         if all_scraped_texts:
-            processed_texts = self.text_processor.process_texts(all_scraped_texts)
-            high_quality_texts = self.text_processor.filter_by_quality(processed_texts, 0.3)
-            
-            # Save to database
-            for processed_text in high_quality_texts:
-                try:
-                    text_type = processed_text.original.text_type
-                    scraper = self.scraper_factory.create_scraper(text_type, self.db_manager)
-                    
-                    async with scraper:
-                        await scraper.save_texts_to_db([processed_text.original])
-                        results['texts_saved'] += 1
-                        
-                except Exception as e:
-                    error_msg = f"Error saving text: {str(e)}"
-                    results['errors'].append(error_msg)
+            processed_results = await self._process_and_store_hybrid(all_scraped_texts, results)
+            results.update(processed_results)
         
         results['completed_at'] = datetime.utcnow().isoformat()
+        results['total_processed'] = sum(results['processed_counts'].values())
+        results['total_postgres_saved'] = sum(results['postgres_saved_counts'].values())
+        results['total_qdrant_saved'] = sum(results['qdrant_saved_counts'].values())
+        
         return results
     
-    async def _scrape_bible_request(self, scraper, request: Dict[str, Any]) -> List[ScrapedText]:
-        """Handle Bible-specific scraping request."""
-        if 'passage' in request:
-            # Specific passage request
-            passage = request['passage']
-            return await scraper.scrape_specific_passage(
-                book=passage['book'],
-                chapter=passage['chapter'],
-                verse_start=passage.get('verse_start', 1),
-                verse_end=passage.get('verse_end'),
-                version=passage.get('version', 'NIV')
-            )
-        else:
-            # General scraping
-            return await scraper.scrape_texts(**request.get('params', {}))
-    
-    async def _scrape_quran_request(self, scraper, request: Dict[str, Any]) -> List[ScrapedText]:
-        """Handle Quran-specific scraping request."""
-        if 'verses' in request:
-            # Specific verses request
-            verses = request['verses']
-            return await scraper.scrape_specific_verses(
-                surah=verses['surah'],
-                verse_start=verses.get('verse_start', 1),
-                verse_end=verses.get('verse_end'),
-                translations=verses.get('translations'),
-                include_arabic=verses.get('include_arabic', True)
-            )
-        else:
-            # General scraping
-            return await scraper.scrape_texts(**request.get('params', {}))
-    
-    async def _scrape_gita_request(self, scraper, request: Dict[str, Any]) -> List[ScrapedText]:
-        """Handle Bhagavad Gita-specific scraping request."""
-        if 'verses' in request:
-            # Specific verses request
-            verses = request['verses']
-            return await scraper.scrape_specific_gita_verses(
-                chapter=verses['chapter'],
-                verse_start=verses.get('verse_start', 1),
-                verse_end=verses.get('verse_end'),
-                include_sanskrit=verses.get('include_sanskrit', True),
-                include_commentary=verses.get('include_commentary', False)
-            )
-        else:
-            # General scraping
-            return await scraper.scrape_texts(**request.get('params', {}))
-    
-    async def _scrape_dhammapada_request(self, scraper, request: Dict[str, Any]) -> List[ScrapedText]:
-        """Handle Dhammapada-specific scraping request."""
-        if 'verses' in request:
-            # Specific verses request
-            verses = request['verses']
-            return await scraper.scrape_specific_dhammapada_verses(
-                chapter=verses['chapter'],
-                verse_start=verses.get('verse_start', 1),
-                verse_end=verses.get('verse_end'),
-                include_pali=verses.get('include_pali', True)
-            )
-        else:
-            # General scraping
-            return await scraper.scrape_texts(**request.get('params', {}))
-    
-    async def get_scraping_status(self) -> Dict[str, Any]:
-        """Get current status of scraped texts in database."""
-        async with self.db_manager.get_async_session() as session:
-            from sqlalchemy import select, func
+    async def _process_and_store_hybrid(self, 
+                                      scraped_texts: List[ScrapedText], 
+                                      results: Dict[str, Any]) -> Dict[str, Any]:
+        """Process texts and store in both PostgreSQL and Qdrant."""
+        postgres_counts = {}
+        qdrant_counts = {}
+        processed_counts = {}
+        embedding_stats = {'generated': 0, 'failed': 0, 'avg_tokens': 0}
+        
+        # Process texts in batches for efficiency
+        batch_size = 10
+        for i in range(0, len(scraped_texts), batch_size):
+            batch = scraped_texts[i:i + batch_size]
             
-            # Count texts by type
-            type_counts = {}
-            for text_type in TextType:
-                query = select(func.count(SpiritualText.id)).where(
-                    SpiritualText.text_type == text_type
-                )
-                result = await session.execute(query)
-                count = result.scalar() or 0
-                type_counts[text_type.value] = count
-            
-            # Get total count
-            total_query = select(func.count(SpiritualText.id))
-            total_result = await session.execute(total_query)
-            total_count = total_result.scalar() or 0
-            
-            # Get recent additions (last 24 hours)
-            from datetime import timedelta
-            yesterday = datetime.utcnow() - timedelta(days=1)
-            recent_query = select(func.count(SpiritualText.id)).where(
-                SpiritualText.created_at >= yesterday
-            )
-            recent_result = await session.execute(recent_query)
-            recent_count = recent_result.scalar() or 0
-            
-            return {
-                'total_texts': total_count,
-                'texts_by_type': type_counts,
-                'recent_additions': recent_count,
-                'supported_types': [tt.value for tt in self.scraper_factory.get_supported_text_types()],
-                'status_generated_at': datetime.utcnow().isoformat()
-            }
-    
-    def create_scraping_config(self, 
-                             text_types: List[TextType],
-                             **kwargs) -> Dict[str, Any]:
-        """Create a scraping configuration."""
-        config = {
-            'min_quality': kwargs.get('min_quality', 0.3),
-            'max_texts_per_type': kwargs.get('max_texts_per_type', 100)
+            try:
+                # Process the batch
+                processed_batch = []
+                for scraped_text in batch:
+                    try:
+                        processed_text = await self.text_processor.process(scraped_text)
+                        processed_batch.append((scraped_text, processed_text))
+                        
+                        # Update counts
+                        text_type = scraped_text.text_type.value
+                        processed_counts[text_type] = processed_counts.get(text_type, 0) + 1
+                        
+                    except Exception as e:
+                        self.logger.error(f"Error processing text: {str(e)}")
+                        results['errors'].append(f"Processing error: {str(e)}")
+                
+                # Store in hybrid database
+                postgres_saved, qdrant_saved, embed_stats = await self._store_batch_hybrid(processed_batch)
+                
+                # Update results
+                for text_type, count in postgres_saved.items():
+                    postgres_counts[text_type] = postgres_counts.get(text_type, 0) + count
+                
+                for text_type, count in qdrant_saved.items():
+                    qdrant_counts[text_type] = qdrant_counts.get(text_type, 0) + count
+                
+                # Update embedding stats
+                embedding_stats['generated'] += embed_stats.get('generated', 0)
+                embedding_stats['failed'] += embed_stats.get('failed', 0)
+                
+                self.logger.info(f"Processed and stored batch {i//batch_size + 1}/{(len(scraped_texts) + batch_size - 1)//batch_size}")
+                
+            except Exception as e:
+                error_msg = f"Error processing batch {i//batch_size + 1}: {str(e)}"
+                self.logger.error(error_msg)
+                results['errors'].append(error_msg)
+        
+        return {
+            'processed_counts': processed_counts,
+            'postgres_saved_counts': postgres_counts,
+            'qdrant_saved_counts': qdrant_counts,
+            'embedding_stats': embedding_stats
         }
-        
-        # Add type-specific configurations
-        for text_type in text_types:
-            if text_type == TextType.BIBLE:
-                config['bible'] = {
-                    'books': kwargs.get('bible_books', ['genesis', 'matthew', 'john']),
-                    'versions': kwargs.get('bible_versions', ['NIV', 'ESV']),
-                    'source': kwargs.get('bible_source', 'bible_gateway')
-                }
-            elif text_type == TextType.QURAN:
-                config['quran'] = {
-                    'surahs': kwargs.get('quran_surahs', list(range(1, 6))),
-                    'translations': kwargs.get('quran_translations', ['en.sahih']),
-                    'include_arabic': kwargs.get('include_arabic', True),
-                    'source': kwargs.get('quran_source', 'quran_com')
-                }
-            elif text_type == TextType.BHAGAVAD_GITA:
-                config['bhagavad_gita'] = {
-                    'text_types': [TextType.BHAGAVAD_GITA],
-                    'chapters': kwargs.get('gita_chapters', list(range(1, 4))),
-                    'include_sanskrit': kwargs.get('include_sanskrit', True)
-                }
-            elif text_type == TextType.DHAMMAPADA:
-                config['dhammapada'] = {
-                    'text_types': [TextType.DHAMMAPADA],
-                    'chapters': kwargs.get('dhammapada_chapters', list(range(1, 4))),
-                    'include_pali': kwargs.get('include_pali', True)
-                }
-        
-        return config
     
-    async def export_scraped_data(self, 
-                                output_path: str,
-                                text_types: Optional[List[TextType]] = None,
-                                format: str = 'json') -> str:
-        """Export scraped data to file."""
-        import json
+    async def _store_batch_hybrid(self, 
+                                processed_batch: List[Tuple[ScrapedText, ProcessedText]]) -> Tuple[Dict[str, int], Dict[str, int], Dict[str, int]]:
+        """Store a batch of processed texts in both PostgreSQL and Qdrant."""
+        postgres_saved = {}
+        qdrant_saved = {}
+        embedding_stats = {'generated': 0, 'failed': 0}
         
-        async with self.db_manager.get_async_session() as session:
-            from sqlalchemy import select
+        # Prepare data for batch operations
+        spiritual_texts = []
+        qdrant_batch_data = []
+        
+        async with db_manager.get_async_session() as session:
+            for scraped_text, processed_text in processed_batch:
+                try:
+                    # Generate unique ID for the text
+                    text_id = str(uuid.uuid4())
+                    
+                    # Determine field and subfield categories
+                    field_category_id, subfield_category_id = await self._determine_categories(
+                        session, scraped_text.text_type
+                    )
+                    
+                    # Create SpiritualText object
+                    spiritual_text = SpiritualText(
+                        id=text_id,
+                        title=processed_text.title,
+                        text_type=scraped_text.text_type,
+                        language=processed_text.language,
+                        content=processed_text.content,
+                        field_category_id=field_category_id,
+                        subfield_category_id=subfield_category_id,
+                        source_url=scraped_text.source_url,
+                        manuscript_source=processed_text.manuscript_source,
+                        publication_date=processed_text.publication_date,
+                        author=processed_text.author,
+                        book=processed_text.book,
+                        chapter=processed_text.chapter,
+                        verse=processed_text.verse,
+                        verse_end=processed_text.verse_end,
+                        token_count=processed_text.token_count,
+                        chunk_sequence=processed_text.chunk_sequence,
+                        qdrant_point_id=text_id,  # Use same ID for Qdrant
+                        embedding_model="sentence-transformers/all-MiniLM-L6-v2",
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
+                    )
+                    
+                    spiritual_texts.append(spiritual_text)
+                    
+                    # Prepare for Qdrant storage
+                    qdrant_metadata = {
+                        'title': processed_text.title,
+                        'text_type': scraped_text.text_type.value,
+                        'language': processed_text.language.value,
+                        'book': processed_text.book,
+                        'chapter': processed_text.chapter,
+                        'verse': processed_text.verse,
+                        'author': processed_text.author,
+                        'source_url': scraped_text.source_url
+                    }
+                    
+                    qdrant_batch_data.append((text_id, processed_text.content, qdrant_metadata))
+                    
+                except Exception as e:
+                    self.logger.error(f"Error preparing text for storage: {str(e)}")
+                    continue
             
-            query = select(SpiritualText)
-            if text_types:
-                query = query.where(SpiritualText.text_type.in_(text_types))
-            
-            result = await session.execute(query)
-            texts = result.scalars().all()
-            
-            # Convert to dict format
-            export_data = {
-                'exported_at': datetime.utcnow().isoformat(),
-                'total_texts': len(texts),
-                'texts': []
+            # Store in PostgreSQL
+            try:
+                session.add_all(spiritual_texts)
+                await session.commit()
+                
+                for spiritual_text in spiritual_texts:
+                    text_type = spiritual_text.text_type.value
+                    postgres_saved[text_type] = postgres_saved.get(text_type, 0) + 1
+                
+                self.logger.info(f"Saved {len(spiritual_texts)} texts to PostgreSQL")
+                
+            except Exception as e:
+                await session.rollback()
+                self.logger.error(f"Error saving to PostgreSQL: {str(e)}")
+        
+        # Store in Qdrant
+        if qdrant_batch_data:
+            try:
+                await qdrant_manager.add_texts_batch(qdrant_batch_data)
+                
+                for text_id, content, metadata in qdrant_batch_data:
+                    text_type = metadata['text_type']
+                    qdrant_saved[text_type] = qdrant_saved.get(text_type, 0) + 1
+                    embedding_stats['generated'] += 1
+                
+                self.logger.info(f"Saved {len(qdrant_batch_data)} texts to Qdrant")
+                
+            except Exception as e:
+                self.logger.error(f"Error saving to Qdrant: {str(e)}")
+                embedding_stats['failed'] += len(qdrant_batch_data)
+        
+        return postgres_saved, qdrant_saved, embedding_stats
+    
+    async def _determine_categories(self, session, text_type: TextType) -> Tuple[Optional[str], Optional[str]]:
+        """Determine field and subfield category IDs based on text type."""
+        try:
+            # Map text types to field categories
+            text_type_mapping = {
+                TextType.BIBLE: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.QURAN: "Religious Books, Texts, Articles, and Other Sources", 
+                TextType.TORAH: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.UPANISHADS: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.BHAGAVAD_GITA: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.TAO_TE_CHING: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.DHAMMAPADA: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.GNOSTIC: "Religious Books, Texts, Articles, and Other Sources",
+                TextType.ZOHAR: "Religious Books, Texts, Articles, and Other Sources",
             }
             
-            for text in texts:
-                export_data['texts'].append({
-                    'id': str(text.id),
-                    'title': text.title,
-                    'content': text.content,
-                    'text_type': text.text_type.value,
-                    'language': text.language.value,
-                    'book': text.book,
-                    'chapter': text.chapter,
-                    'verse': text.verse,
-                    'author': text.author,
-                    'translator': text.translator,
-                    'source_url': text.source_url,
-                    'metadata': text.metadata,
-                    'created_at': text.created_at.isoformat() if text.created_at else None
-                })
+            # Subfield mapping
+            subfield_mapping = {
+                TextType.BIBLE: "Christianity (e.g., Bible, Patristic Texts)",
+                TextType.QURAN: "Islam (e.g., Quran, Hadith)",
+                TextType.TORAH: "Judaism (e.g., Torah, Talmud)",
+                TextType.UPANISHADS: "Hinduism (e.g., Vedas, Upanishads)",
+                TextType.BHAGAVAD_GITA: "Hinduism (e.g., Vedas, Upanishads)",
+                TextType.TAO_TE_CHING: "Taoism (e.g., Tao Te Ching)",
+                TextType.DHAMMAPADA: "Buddhism (e.g., Sutras, Tripitaka)",
+                TextType.GNOSTIC: "Gnosticism",
+                TextType.ZOHAR: "Judaism (e.g., Torah, Talmud)",
+            }
             
-            # Write to file
-            output_file = Path(output_path)
-            output_file.parent.mkdir(parents=True, exist_ok=True)
+            field_name = text_type_mapping.get(text_type)
+            subfield_name = subfield_mapping.get(text_type)
             
-            if format.lower() == 'json':
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    json.dump(export_data, f, indent=2, ensure_ascii=False)
-            else:
-                raise ValueError(f"Unsupported export format: {format}")
+            field_category_id = None
+            subfield_category_id = None
             
-            return str(output_file)
+            if field_name:
+                # Get field category
+                field_result = await session.execute(
+                    select(FieldCategory).where(FieldCategory.field_name == field_name)
+                )
+                field_category = field_result.scalar_one_or_none()
+                if field_category:
+                    field_category_id = field_category.id
+                    
+                    if subfield_name:
+                        # Get subfield category
+                        subfield_result = await session.execute(
+                            select(SubfieldCategory).where(
+                                SubfieldCategory.field_id == field_category_id,
+                                SubfieldCategory.subfield_name == subfield_name
+                            )
+                        )
+                        subfield_category = subfield_result.scalar_one_or_none()
+                        if subfield_category:
+                            subfield_category_id = subfield_category.id
+            
+            return field_category_id, subfield_category_id
+            
+        except Exception as e:
+            self.logger.error(f"Error determining categories: {str(e)}")
+            return None, None
+
+
+# Global instance for the enhanced scraping manager
+hybrid_scraping_manager = HybridScrapingManager()

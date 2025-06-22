@@ -1,4 +1,4 @@
-"""Doctrine analysis agent for identifying and tracking religious doctrines."""
+"""Enhanced doctrine analysis agent for identifying and tracking religious doctrines with RAG integration."""
 
 import json
 import re
@@ -37,7 +37,7 @@ class DetectedDoctrine(BaseModel):
 
 
 class DoctrineAnalysisAgent(BaseAgent):
-    """Agent for analyzing and tracking religious doctrines across texts."""
+    """Enhanced agent for analyzing and tracking religious doctrines across texts with RAG integration."""
     
     DOCTRINE_DEFINITIONS = {
         # Christian Doctrines
@@ -49,553 +49,470 @@ class DoctrineAnalysisAgent(BaseAgent):
             related_concepts=["incarnation", "divine nature", "hypostasis", "consubstantial"],
             historical_context="Formalized at Council of Nicaea (325 CE) and Constantinople (381 CE)"
         ),
+        
         "incarnation": DoctrineDefinition(
             name="Incarnation",
-            description="The belief that Jesus Christ is both fully God and fully human",
+            description="The doctrine that Jesus Christ is both fully God and fully human",
             tradition="Christianity",
             keywords=["incarnation", "god-man", "divine nature", "human nature", "hypostatic union"],
-            related_concepts=["christology", "two natures", "theotokos", "logos"],
+            related_concepts=["trinity", "christology", "dual nature"],
             historical_context="Defined at Council of Chalcedon (451 CE)"
         ),
+        
         "salvation_by_grace": DoctrineDefinition(
             name="Salvation by Grace",
-            description="The doctrine that salvation comes through God's grace, not human works",
+            description="The doctrine that salvation is by grace through faith, not by works",
             tradition="Christianity",
             denomination="Protestant",
-            keywords=["grace", "faith alone", "sola gratia", "justification", "salvation"],
-            related_concepts=["atonement", "redemption", "sanctification", "predestination"],
+            keywords=["grace", "faith", "salvation", "sola gratia", "justification"],
+            related_concepts=["atonement", "redemption", "sanctification"],
             historical_context="Emphasized during Protestant Reformation (16th century)"
-        ),
-        "transubstantiation": DoctrineDefinition(
-            name="Transubstantiation",
-            description="The doctrine that bread and wine become the actual body and blood of Christ",
-            tradition="Christianity",
-            denomination="Catholic",
-            keywords=["transubstantiation", "eucharist", "real presence", "substance", "accidents"],
-            related_concepts=["mass", "communion", "sacrament", "consecration"],
-            historical_context="Formally defined at Fourth Lateran Council (1215 CE)"
         ),
         
         # Islamic Doctrines
         "tawhid": DoctrineDefinition(
             name="Tawhid",
-            description="The absolute oneness and unity of Allah",
+            description="The doctrine of the absolute unity and uniqueness of Allah",
             tradition="Islam",
-            keywords=["tawhid", "oneness", "unity", "allah", "monotheism", "la ilaha illa allah"],
-            related_concepts=["shirk", "monotheism", "divine unity", "absolute"],
-            historical_context="Central doctrine from the beginning of Islam"
+            keywords=["tawhid", "unity", "oneness", "allah", "monotheism"],
+            related_concepts=["shirk", "iman", "islamic monotheism"],
+            historical_context="Fundamental principle from Quranic revelation"
         ),
+        
         "prophethood": DoctrineDefinition(
             name="Prophethood",
-            description="The belief in prophets as messengers of Allah, with Muhammad as the final prophet",
+            description="The doctrine regarding prophets as messengers of Allah",
             tradition="Islam",
-            keywords=["prophet", "messenger", "rasul", "nabi", "muhammad", "final prophet"],
-            related_concepts=["revelation", "quran", "sunnah", "seal of prophets"],
-            historical_context="Fundamental Islamic belief from the Quran"
-        ),
-        "predestination_qadar": DoctrineDefinition(
-            name="Qadar (Predestination)",
-            description="The doctrine of divine predestination and decree",
-            tradition="Islam",
-            keywords=["qadar", "predestination", "divine decree", "fate", "destiny"],
-            related_concepts=["free will", "divine knowledge", "determinism", "taqdir"],
-            historical_context="Debated extensively in early Islamic theology"
+            keywords=["prophet", "messenger", "nabi", "rasul", "muhammad"],
+            related_concepts=["revelation", "quran", "sunnah"],
+            historical_context="Central to Islamic belief system"
         ),
         
         # Jewish Doctrines
         "chosen_people": DoctrineDefinition(
             name="Chosen People",
-            description="The belief that the Jewish people have a special covenant with God",
+            description="The doctrine that Jews are chosen by God for a special covenant",
             tradition="Judaism",
-            keywords=["chosen people", "covenant", "election", "israel", "special relationship"],
-            related_concepts=["brit", "torah", "mitzvot", "promised land"],
-            historical_context="Rooted in Abrahamic and Mosaic covenants"
-        ),
-        "torah_divine": DoctrineDefinition(
-            name="Divine Torah",
-            description="The belief that the Torah is the direct word of God given to Moses",
-            tradition="Judaism",
-            keywords=["torah", "divine revelation", "moses", "sinai", "word of god"],
-            related_concepts=["oral law", "written law", "revelation", "commandments"],
-            historical_context="Central to Jewish faith and practice"
-        ),
-        
-        # Hindu Doctrines
-        "karma": DoctrineDefinition(
-            name="Karma",
-            description="The law of cause and effect governing actions and their consequences",
-            tradition="Hinduism",
-            keywords=["karma", "action", "consequence", "cause and effect", "moral law"],
-            related_concepts=["dharma", "samsara", "moksha", "reincarnation"],
-            historical_context="Developed in Upanishads and classical Hindu texts"
-        ),
-        "dharma": DoctrineDefinition(
-            name="Dharma",
-            description="Righteous duty and moral law governing individual and social conduct",
-            tradition="Hinduism",
-            keywords=["dharma", "duty", "righteousness", "moral law", "cosmic order"],
-            related_concepts=["karma", "varna", "ashrama", "rita"],
-            historical_context="Central concept in Hindu ethics and philosophy"
-        ),
-        "moksha": DoctrineDefinition(
-            name="Moksha",
-            description="Liberation from the cycle of birth, death, and rebirth",
-            tradition="Hinduism",
-            keywords=["moksha", "liberation", "release", "salvation", "freedom"],
-            related_concepts=["samsara", "nirvana", "enlightenment", "self-realization"],
-            historical_context="Ultimate goal in Hindu spiritual practice"
+            keywords=["chosen", "covenant", "israel", "election", "promised land"],
+            related_concepts=["torah", "mitzvot", "diaspora"],
+            historical_context="Biblical covenant with Abraham and Moses"
         ),
         
         # Buddhist Doctrines
         "four_noble_truths": DoctrineDefinition(
             name="Four Noble Truths",
-            description="The fundamental Buddhist teaching about suffering and its cessation",
+            description="The fundamental Buddhist teaching about suffering and liberation",
             tradition="Buddhism",
-            keywords=["four noble truths", "suffering", "dukkha", "cessation", "path"],
-            related_concepts=["eightfold path", "nirvana", "enlightenment", "buddha"],
-            historical_context="Buddha's first teaching after enlightenment"
+            keywords=["four noble truths", "dukkha", "suffering", "nirvana", "eightfold path"],
+            related_concepts=["karma", "rebirth", "enlightenment"],
+            historical_context="First sermon of Buddha at Sarnath"
         ),
-        "no_self": DoctrineDefinition(
-            name="Anatman (No-Self)",
-            description="The doctrine that there is no permanent, unchanging self or soul",
-            tradition="Buddhism",
-            keywords=["anatman", "no-self", "anatta", "impermanence", "non-self"],
-            related_concepts=["impermanence", "interdependence", "emptiness", "skandhas"],
-            historical_context="Distinguishes Buddhism from Hindu concepts of atman"
+        
+        # Hindu Doctrines
+        "karma": DoctrineDefinition(
+            name="Karma",
+            description="The doctrine of action and consequence across lifetimes",
+            tradition="Hinduism",
+            keywords=["karma", "action", "consequence", "rebirth", "dharma"],
+            related_concepts=["samsara", "moksha", "dharma"],
+            historical_context="Ancient Vedic and Upanishadic teaching"
         ),
     }
     
     def __init__(self):
         super().__init__(
-            name="doctrine_analysis",
-            description="Analyzes and tracks religious doctrines across spiritual texts"
+            name="DoctrineAnalysisAgent",
+            description="Analyzes and tracks religious doctrines across spiritual texts with RAG capabilities",
+            enable_rag=True
         )
+        
+        # Build keyword index for efficient matching
+        self.keyword_index = self._build_keyword_index()
+        
+        # System prompt for doctrine analysis
+        self.system_prompt = """You are an expert in comparative religious studies and doctrinal analysis. 
+        Your task is to identify, analyze, and explain religious doctrines found in spiritual texts.
+        
+        When analyzing text for doctrines:
+        1. Identify specific doctrines mentioned or implied
+        2. Determine the religious tradition and denomination if applicable
+        3. Provide confidence scores based on textual evidence
+        4. Explain the historical and theological context
+        5. Note any doctrinal evolution or variations
+        6. Compare with similar doctrines in other traditions
+        
+        Be scholarly, objective, and respectful of all religious traditions."""
     
-    async def execute(self, input_data: Dict[str, Any]) -> AgentResult:
-        """Execute doctrine analysis on provided text."""
+    def _build_keyword_index(self) -> Dict[str, List[str]]:
+        """Build keyword index for efficient doctrine matching."""
+        index = defaultdict(list)
+        
+        for doctrine_key, definition in self.DOCTRINE_DEFINITIONS.items():
+            for keyword in definition.keywords:
+                index[keyword.lower()].append(doctrine_key)
+                
+        return dict(index)
+    
+    async def process(self, query: str, context: Optional[Dict[str, Any]] = None) -> AgentResult:
+        """Process a doctrine analysis query with RAG enhancement."""
         try:
-            text = input_data.get("text", "")
-            text_id = input_data.get("text_id")
-            tradition = input_data.get("tradition", "")
-            denomination = input_data.get("denomination")
-            historical_period = input_data.get("historical_period")
+            start_time = datetime.now()
             
-            if not text:
-                return self._create_result(
-                    success=False,
-                    error="Text parameter is required"
+            # Extract text from context or use query as text
+            text = context.get('text', query) if context else query
+            text_type = context.get('text_type') if context else None
+            
+            # Get relevant context using RAG if enabled
+            context_texts = []
+            if self.enable_rag and context and context.get('enable_rag', True):
+                context_texts = await self.get_context_texts(
+                    query=f"doctrine analysis: {query}",
+                    text_types=[text_type] if text_type else None,
+                    limit=3
                 )
             
-            # Detect doctrines using multiple methods
-            detected_doctrines = await self._detect_doctrines(text, tradition, denomination)
+            # Perform doctrine analysis
+            doctrine_analysis = await self._analyze_doctrines(text, context_texts)
             
-            # Analyze doctrinal evolution if historical context provided
-            evolution_analysis = await self._analyze_doctrinal_evolution(
-                detected_doctrines, historical_period
-            ) if historical_period else {}
+            # Generate enhanced analysis with RAG if context available
+            if context_texts and doctrine_analysis['doctrines']:
+                enhanced_analysis = await self._enhance_with_rag(
+                    text, doctrine_analysis, context_texts
+                )
+                doctrine_analysis.update(enhanced_analysis)
             
-            # Score and rank doctrines
-            ranked_doctrines = self._rank_doctrines(detected_doctrines)
+            execution_time = (datetime.now() - start_time).total_seconds()
             
-            return self._create_result(
+            return AgentResult(
                 success=True,
-                data={
-                    "text_id": text_id,
-                    "tradition": tradition,
-                    "denomination": denomination,
-                    "doctrines_detected": len(ranked_doctrines),
-                    "doctrines": [d.dict() for d in ranked_doctrines],
-                    "evolution_analysis": evolution_analysis,
-                    "analysis_summary": self._create_summary(ranked_doctrines)
-                }
+                data=doctrine_analysis,
+                metadata={
+                    'agent_type': 'doctrine_analysis',
+                    'text_length': len(text),
+                    'rag_context_used': len(context_texts),
+                    'doctrines_detected': len(doctrine_analysis.get('doctrines', []))
+                },
+                execution_time=execution_time,
+                sources=[
+                    {
+                        'title': ctx['title'],
+                        'source': ctx.get('source_url', ''),
+                        'text_type': ctx['text_type'],
+                        'similarity_score': ctx.get('similarity_score', 0.0)
+                    }
+                    for ctx in context_texts
+                ]
             )
             
         except Exception as e:
             self.logger.error(f"Doctrine analysis failed: {e}")
-            return self._create_result(
+            return AgentResult(
                 success=False,
-                error=str(e)
+                error=str(e),
+                data={}
             )
     
-    async def _detect_doctrines(
-        self,
-        text: str,
-        tradition: str = "",
-        denomination: Optional[str] = None
-    ) -> List[DetectedDoctrine]:
-        """Detect doctrines using multiple detection methods."""
-        detected = []
+    async def _analyze_doctrines(self, text: str, context_texts: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Analyze text for religious doctrines."""
+        # Initial keyword-based detection
+        potential_doctrines = self._detect_potential_doctrines(text)
         
-        # Method 1: Keyword-based detection
-        keyword_doctrines = self._detect_by_keywords(text, tradition, denomination)
-        detected.extend(keyword_doctrines)
+        # Enhanced analysis with LLM
+        detected_doctrines = []
+        for doctrine_key in potential_doctrines:
+            doctrine_analysis = await self._analyze_specific_doctrine(text, doctrine_key, context_texts)
+            if doctrine_analysis:
+                detected_doctrines.append(doctrine_analysis)
         
-        # Method 2: Contextual pattern detection
-        pattern_doctrines = self._detect_by_patterns(text, tradition)
-        detected.extend(pattern_doctrines)
+        # Cross-tradition analysis
+        cross_tradition_analysis = self._analyze_cross_traditions(detected_doctrines)
         
-        # Method 3: LLM-based detection
-        llm_doctrines = await self._detect_by_llm(text, tradition, denomination)
-        detected.extend(llm_doctrines)
-        
-        # Merge and deduplicate
-        return self._merge_doctrine_detections(detected)
-    
-    def _detect_by_keywords(
-        self,
-        text: str,
-        tradition: str = "",
-        denomination: Optional[str] = None
-    ) -> List[DetectedDoctrine]:
-        """Detect doctrines using keyword matching."""
-        detected = []
-        text_lower = text.lower()
-        
-        # Filter doctrines by tradition if specified
-        relevant_doctrines = {}
-        for key, doctrine in self.DOCTRINE_DEFINITIONS.items():
-            if not tradition or doctrine.tradition.lower() == tradition.lower():
-                if not denomination or not doctrine.denomination or doctrine.denomination.lower() == denomination.lower():
-                    relevant_doctrines[key] = doctrine
-        
-        for doctrine_key, doctrine_info in relevant_doctrines.items():
-            matched_keywords = []
-            matched_excerpts = []
-            
-            # Check for keywords and related concepts
-            all_keywords = doctrine_info.keywords + doctrine_info.related_concepts
-            
-            for keyword in all_keywords:
-                if keyword.lower() in text_lower:
-                    matched_keywords.append(keyword)
-                    # Find sentences containing the keyword
-                    sentences = self._split_into_sentences(text)
-                    for sentence in sentences:
-                        if keyword.lower() in sentence.lower():
-                            matched_excerpts.append(sentence)
-            
-            if matched_keywords:
-                confidence = min(len(matched_keywords) * 0.25, 0.9)
-                
-                detected.append(DetectedDoctrine(
-                    doctrine_name=doctrine_info.name,
-                    tradition=doctrine_info.tradition,
-                    denomination=doctrine_info.denomination,
-                    confidence_score=confidence,
-                    text_excerpts=matched_excerpts[:3],
-                    explanation=f"Keywords found: {', '.join(matched_keywords)}",
-                    historical_context=doctrine_info.historical_context
-                ))
-        
-        return detected
-    
-    def _detect_by_patterns(self, text: str, tradition: str = "") -> List[DetectedDoctrine]:
-        """Detect doctrines using contextual patterns."""
-        detected = []
-        
-        # Pattern for Trinity (Christian)
-        trinity_patterns = [
-            r"father\s+(?:and\s+)?son\s+(?:and\s+)?holy\s+spirit",
-            r"three\s+persons?\s+(?:in\s+)?one\s+god",
-            r"godhead\s+(?:of\s+)?three",
-        ]
-        
-        for pattern in trinity_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                detected.append(DetectedDoctrine(
-                    doctrine_name="Trinity",
-                    tradition="Christianity",
-                    confidence_score=0.7,
-                    text_excerpts=[self._get_sentence_containing_position(text, match.start())],
-                    explanation="Pattern suggests Trinity doctrine",
-                    historical_context=self.DOCTRINE_DEFINITIONS["trinity"].historical_context
-                ))
-        
-        # Pattern for Tawhid (Islamic)
-        tawhid_patterns = [
-            r"la\s+ilaha\s+illa\s+allah",
-            r"oneness\s+of\s+allah",
-            r"allah\s+is\s+one",
-        ]
-        
-        for pattern in tawhid_patterns:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                detected.append(DetectedDoctrine(
-                    doctrine_name="Tawhid",
-                    tradition="Islam",
-                    confidence_score=0.8,
-                    text_excerpts=[self._get_sentence_containing_position(text, match.start())],
-                    explanation="Pattern suggests Tawhid doctrine",
-                    historical_context=self.DOCTRINE_DEFINITIONS["tawhid"].historical_context
-                ))
-        
-        return detected
-    
-    async def _detect_by_llm(
-        self,
-        text: str,
-        tradition: str = "",
-        denomination: Optional[str] = None
-    ) -> List[DetectedDoctrine]:
-        """Detect doctrines using LLM analysis."""
-        try:
-            system_prompt = """You are an expert in religious studies and theology. Your task is to identify specific religious doctrines in the provided text.
-
-Focus on identifying these types of doctrines:
-- Core theological beliefs (Trinity, Tawhid, etc.)
-- Salvation doctrines (Grace, Karma, etc.)
-- Eschatological beliefs (Afterlife, Judgment, etc.)
-- Sacramental doctrines (Transubstantiation, etc.)
-- Ethical teachings (Dharma, Commandments, etc.)
-
-For each doctrine you identify, provide:
-- The specific doctrine name
-- The religious tradition it belongs to
-- Denomination if applicable
-- Confidence score (0.0 to 1.0)
-- Text excerpts that express this doctrine
-- Brief explanation of how the text expresses this doctrine
-
-Respond in JSON format."""
-            
-            tradition_context = f"This text is from the {tradition} tradition" if tradition else "Analyze for any religious tradition"
-            denomination_context = f" ({denomination} denomination)" if denomination else ""
-            
-            analysis_prompt = f"""Identify specific religious doctrines in this text:
-
-Context: {tradition_context}{denomination_context}
-
-Text to analyze:
-{text}
-
-Identify doctrines and respond in this JSON format:
-{{
-  "doctrines": [
-    {{
-      "name": "doctrine_name",
-      "tradition": "tradition_name",
-      "denomination": "denomination_name",
-      "excerpts": ["relevant text excerpt 1", "relevant text excerpt 2"],
-      "confidence": 0.8,
-      "explanation": "how this doctrine is expressed in the text"
-    }}
-  ]
-}}"""
-            
-            response = await self._analyze_text(text, analysis_prompt, system_prompt)
-            
-            # Parse JSON response
-            try:
-                result = json.loads(response)
-                detected = []
-                
-                for doctrine_data in result.get("doctrines", []):
-                    doctrine_name = doctrine_data.get("name", "")
-                    
-                    # Map to our standard doctrine names
-                    mapped_doctrine = self._map_doctrine_name(doctrine_name)
-                    if mapped_doctrine:
-                        detected.append(DetectedDoctrine(
-                            doctrine_name=mapped_doctrine,
-                            tradition=doctrine_data.get("tradition", tradition),
-                            denomination=doctrine_data.get("denomination", denomination),
-                            confidence_score=doctrine_data.get("confidence", 0.5),
-                            text_excerpts=doctrine_data.get("excerpts", []),
-                            explanation=doctrine_data.get("explanation", ""),
-                            historical_context=self._get_doctrine_historical_context(mapped_doctrine)
-                        ))
-                
-                return detected
-                
-            except json.JSONDecodeError:
-                self.logger.warning("Failed to parse LLM JSON response")
-                return self._parse_llm_text_response(response, tradition)
-                
-        except Exception as e:
-            self.logger.error(f"LLM doctrine detection failed: {e}")
-            return []
-    
-    def _map_doctrine_name(self, llm_doctrine_name: str) -> Optional[str]:
-        """Map LLM-generated doctrine name to our standard doctrines."""
-        llm_lower = llm_doctrine_name.lower()
-        
-        # Direct name matching
-        for doctrine_key, doctrine_info in self.DOCTRINE_DEFINITIONS.items():
-            if (doctrine_info.name.lower() in llm_lower or 
-                llm_lower in doctrine_info.name.lower()):
-                return doctrine_info.name
-        
-        # Keyword matching
-        for doctrine_key, doctrine_info in self.DOCTRINE_DEFINITIONS.items():
-            for keyword in doctrine_info.keywords:
-                if keyword.lower() in llm_lower:
-                    return doctrine_info.name
-        
-        return None
-    
-    def _get_doctrine_historical_context(self, doctrine_name: str) -> Optional[str]:
-        """Get historical context for a doctrine."""
-        for doctrine_key, doctrine_info in self.DOCTRINE_DEFINITIONS.items():
-            if doctrine_info.name == doctrine_name:
-                return doctrine_info.historical_context
-        return None
-    
-    def _parse_llm_text_response(self, response: str, tradition: str = "") -> List[DetectedDoctrine]:
-        """Parse non-JSON LLM response for doctrines."""
-        detected = []
-        
-        for doctrine_key, doctrine_info in self.DOCTRINE_DEFINITIONS.items():
-            if (not tradition or doctrine_info.tradition.lower() == tradition.lower()) and \
-               doctrine_info.name.lower() in response.lower():
-                
-                # Extract context around the doctrine mention
-                lines = response.split('\n')
-                relevant_lines = []
-                
-                for line in lines:
-                    if doctrine_info.name.lower() in line.lower():
-                        relevant_lines.append(line.strip())
-                
-                if relevant_lines:
-                    detected.append(DetectedDoctrine(
-                        doctrine_name=doctrine_info.name,
-                        tradition=doctrine_info.tradition,
-                        denomination=doctrine_info.denomination,
-                        confidence_score=0.4,
-                        text_excerpts=relevant_lines[:2],
-                        explanation=f"LLM identified {doctrine_info.name}",
-                        historical_context=doctrine_info.historical_context
-                    ))
-        
-        return detected
-    
-    async def _analyze_doctrinal_evolution(
-        self,
-        detected_doctrines: List[DetectedDoctrine],
-        historical_period: str
-    ) -> Dict[str, Any]:
-        """Analyze how doctrines evolved in the given historical period."""
-        if not detected_doctrines:
-            return {}
-        
-        try:
-            doctrines_list = [d.doctrine_name for d in detected_doctrines]
-            
-            system_prompt = """You are an expert in the historical development of religious doctrines. 
-            Analyze how the specified doctrines evolved during the given historical period."""
-            
-            analysis_prompt = f"""Analyze the evolution of these doctrines during {historical_period}:
-
-Doctrines: {', '.join(doctrines_list)}
-
-For each doctrine, describe:
-1. How it was understood during this period
-2. Any changes or developments that occurred
-3. Key figures or events that influenced its development
-4. Controversies or debates surrounding it
-
-Provide a brief analysis for each doctrine."""
-            
-            response = await self._analyze_text("", analysis_prompt, system_prompt)
-            
-            return {
-                "historical_period": historical_period,
-                "analysis": response,
-                "doctrines_analyzed": doctrines_list
-            }
-            
-        except Exception as e:
-            self.logger.error(f"Doctrinal evolution analysis failed: {e}")
-            return {}
-    
-    def _merge_doctrine_detections(self, detected: List[DetectedDoctrine]) -> List[DetectedDoctrine]:
-        """Merge similar doctrine detections."""
-        doctrine_groups = defaultdict(list)
-        
-        # Group by doctrine name
-        for doctrine in detected:
-            doctrine_groups[doctrine.doctrine_name].append(doctrine)
-        
-        merged = []
-        for doctrine_name, doctrines in doctrine_groups.items():
-            if len(doctrines) == 1:
-                merged.append(doctrines[0])
-            else:
-                # Merge multiple detections of the same doctrine
-                best_doctrine = max(doctrines, key=lambda d: d.confidence_score)
-                
-                # Combine excerpts and explanations
-                all_excerpts = []
-                all_explanations = []
-                
-                for doctrine in doctrines:
-                    all_excerpts.extend(doctrine.text_excerpts)
-                    all_explanations.append(doctrine.explanation)
-                
-                # Remove duplicates and limit
-                unique_excerpts = list(dict.fromkeys(all_excerpts))[:5]
-                combined_explanation = "; ".join(set(all_explanations))
-                
-                merged_doctrine = DetectedDoctrine(
-                    doctrine_name=doctrine_name,
-                    tradition=best_doctrine.tradition,
-                    denomination=best_doctrine.denomination,
-                    confidence_score=best_doctrine.confidence_score,
-                    text_excerpts=unique_excerpts,
-                    explanation=combined_explanation,
-                    historical_context=best_doctrine.historical_context
-                )
-                merged.append(merged_doctrine)
-        
-        return merged
-    
-    def _rank_doctrines(self, doctrines: List[DetectedDoctrine]) -> List[DetectedDoctrine]:
-        """Rank doctrines by confidence score and importance."""
-        return sorted(doctrines, key=lambda d: d.confidence_score, reverse=True)
-    
-    def _create_summary(self, doctrines: List[DetectedDoctrine]) -> Dict[str, Any]:
-        """Create a summary of detected doctrines."""
-        if not doctrines:
-            return {"total": 0, "message": "No religious doctrines detected"}
-        
-        tradition_counts = defaultdict(int)
-        denomination_counts = defaultdict(int)
-        
-        for doctrine in doctrines:
-            tradition_counts[doctrine.tradition] += 1
-            if doctrine.denomination:
-                denomination_counts[doctrine.denomination] += 1
-        
-        total_confidence = sum(d.confidence_score for d in doctrines)
-        avg_confidence = total_confidence / len(doctrines)
-        
-        most_confident = max(doctrines, key=lambda d: d.confidence_score)
+        # Generate summary
+        analysis_summary = self._generate_analysis_summary(detected_doctrines)
         
         return {
-            "total": len(doctrines),
-            "average_confidence": round(avg_confidence, 2),
-            "most_confident_doctrine": most_confident.doctrine_name,
-            "traditions": dict(tradition_counts),
-            "denominations": dict(denomination_counts),
-            "doctrines_found": [d.doctrine_name for d in doctrines],
-            "message": f"Detected {len(doctrines)} religious doctrines"
+            'doctrines': detected_doctrines,
+            'cross_tradition_analysis': cross_tradition_analysis,
+            'analysis_summary': analysis_summary,
+            'total_doctrines_detected': len(detected_doctrines)
         }
     
-    def _split_into_sentences(self, text: str) -> List[str]:
-        """Split text into sentences."""
-        sentences = re.split(r'[.!?]+', text)
-        return [s.strip() for s in sentences if s.strip()]
+    def _detect_potential_doctrines(self, text: str) -> List[str]:
+        """Detect potential doctrines based on keyword matching."""
+        text_lower = text.lower()
+        potential_doctrines = set()
+        
+        for keyword, doctrine_keys in self.keyword_index.items():
+            if keyword in text_lower:
+                potential_doctrines.update(doctrine_keys)
+        
+        return list(potential_doctrines)
     
-    def _get_sentence_containing_position(self, text: str, position: int) -> str:
-        """Get the sentence containing a specific character position."""
-        sentences = self._split_into_sentences(text)
-        current_pos = 0
+    async def _analyze_specific_doctrine(
+        self, 
+        text: str, 
+        doctrine_key: str, 
+        context_texts: List[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Analyze specific doctrine in text with LLM enhancement."""
+        definition = self.DOCTRINE_DEFINITIONS[doctrine_key]
         
-        for sentence in sentences:
-            if current_pos <= position <= current_pos + len(sentence):
-                return sentence
-            current_pos += len(sentence) + 1
+        # Prepare context information
+        context_info = ""
+        if context_texts:
+            context_info = "\n\nRelevant context from similar texts:\n" + "\n".join([
+                f"- {ctx['title']}: {ctx['content'][:200]}..."
+                for ctx in context_texts[:2]
+            ])
         
-        return ""
+        prompt = f"""Analyze the following text for the doctrine of "{definition.name}":
+
+Doctrine Definition:
+- Name: {definition.name}
+- Description: {definition.description}
+- Tradition: {definition.tradition}
+- Keywords: {', '.join(definition.keywords)}
+- Historical Context: {definition.historical_context}
+
+Text to analyze:
+{text[:2000]}...
+
+{context_info}
+
+Please provide:
+1. Confidence score (0.0-1.0) that this doctrine is present
+2. Specific text excerpts that support the doctrine
+3. Explanation of how the doctrine is expressed
+4. Any variations or evolution of the doctrine
+5. Historical context if relevant
+
+Format as JSON with keys: confidence_score, text_excerpts, explanation, evolution_notes, historical_context"""
+        
+        try:
+            response = await self._generate_basic_response(prompt, self.system_prompt)
+            
+            # Parse JSON response
+            import json
+            try:
+                analysis = json.loads(response)
+                confidence = analysis.get('confidence_score', 0.0)
+                
+                # Only return if confidence is above threshold
+                if confidence >= 0.3:
+                    return {
+                        'doctrine_name': definition.name,
+                        'tradition': definition.tradition,
+                        'denomination': definition.denomination,
+                        'confidence_score': confidence,
+                        'text_excerpts': analysis.get('text_excerpts', []),
+                        'explanation': analysis.get('explanation', ''),
+                        'evolution_notes': analysis.get('evolution_notes'),
+                        'historical_context': analysis.get('historical_context')
+                    }
+            except json.JSONDecodeError:
+                # Fallback to simple parsing if JSON fails
+                confidence = self._extract_confidence_from_text(response)
+                if confidence >= 0.3:
+                    return {
+                        'doctrine_name': definition.name,
+                        'tradition': definition.tradition,
+                        'denomination': definition.denomination,
+                        'confidence_score': confidence,
+                        'text_excerpts': [],
+                        'explanation': response[:500],
+                        'evolution_notes': None,
+                        'historical_context': definition.historical_context
+                    }
+                    
+        except Exception as e:
+            self.logger.error(f"Error analyzing doctrine {doctrine_key}: {e}")
+            
+        return None
+    
+    def _extract_confidence_from_text(self, text: str) -> float:
+        """Extract confidence score from text response."""
+        import re
+        
+        # Look for confidence patterns
+        patterns = [
+            r'confidence[:\s]*([0-9]*\.?[0-9]+)',
+            r'score[:\s]*([0-9]*\.?[0-9]+)',
+            r'([0-9]*\.?[0-9]+)\s*(?:confidence|score)'
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text.lower())
+            if match:
+                try:
+                    score = float(match.group(1))
+                    return min(score, 1.0) if score <= 1.0 else score / 100.0
+                except (ValueError, IndexError):
+                    continue
+        
+        # Default confidence based on text content
+        positive_indicators = ['clearly', 'evident', 'strong', 'explicit', 'obvious']
+        negative_indicators = ['unclear', 'weak', 'absent', 'no evidence', 'doubtful']
+        
+        positive_count = sum(1 for indicator in positive_indicators if indicator in text.lower())
+        negative_count = sum(1 for indicator in negative_indicators if indicator in text.lower())
+        
+        if positive_count > negative_count:
+            return 0.7
+        elif negative_count > positive_count:
+            return 0.2
+        else:
+            return 0.5
+    
+    async def _enhance_with_rag(
+        self, 
+        text: str, 
+        doctrine_analysis: Dict[str, Any], 
+        context_texts: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Enhance doctrine analysis with RAG insights."""
+        doctrines = doctrine_analysis.get('doctrines', [])
+        if not doctrines:
+            return {}
+        
+        # Generate comparative analysis
+        doctrine_names = [d['doctrine_name'] for d in doctrines]
+        
+        query = f"Compare these doctrines across different texts: {', '.join(doctrine_names)}"
+        
+        rag_response, citations = await self.generate_rag_response(
+            query=query,
+            context_texts=context_texts,
+            system_prompt=self.system_prompt
+        )
+        
+        return {
+            'rag_enhancement': {
+                'comparative_analysis': rag_response,
+                'cross_textual_patterns': self._identify_cross_textual_patterns(doctrines, context_texts),
+                'historical_development': self._trace_historical_development(doctrines, context_texts)
+            }
+        }
+    
+    def _identify_cross_textual_patterns(
+        self, 
+        doctrines: List[Dict[str, Any]], 
+        context_texts: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Identify patterns across different texts."""
+        patterns = []
+        
+        doctrine_by_tradition = defaultdict(list)
+        for doctrine in doctrines:
+            doctrine_by_tradition[doctrine['tradition']].append(doctrine)
+        
+        for tradition, tradition_doctrines in doctrine_by_tradition.items():
+            if len(tradition_doctrines) > 1:
+                patterns.append({
+                    'pattern_type': 'tradition_consistency',
+                    'tradition': tradition,
+                    'description': f"Multiple {tradition} doctrines detected, suggesting doctrinal focus",
+                    'doctrines': [d['doctrine_name'] for d in tradition_doctrines]
+                })
+        
+        return patterns
+    
+    def _trace_historical_development(
+        self, 
+        doctrines: List[Dict[str, Any]], 
+        context_texts: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Trace historical development of doctrines."""
+        development = {
+            'timeline_analysis': [],
+            'evolution_patterns': [],
+            'contextual_influences': []
+        }
+        
+        # Analyze temporal aspects
+        for doctrine in doctrines:
+            if doctrine.get('historical_context'):
+                development['timeline_analysis'].append({
+                    'doctrine': doctrine['doctrine_name'],
+                    'historical_context': doctrine['historical_context'],
+                    'tradition': doctrine['tradition']
+                })
+        
+        return development
+    
+    def _analyze_cross_traditions(self, doctrines: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Analyze doctrines across different religious traditions."""
+        traditions = set(d['tradition'] for d in doctrines)
+        
+        analysis = {
+            'traditions_represented': list(traditions),
+            'tradition_count': len(traditions),
+            'doctrinal_overlaps': [],
+            'unique_doctrines': []
+        }
+        
+        # Find potential overlaps (similar concepts across traditions)
+        overlaps = []
+        for i, doctrine1 in enumerate(doctrines):
+            for doctrine2 in doctrines[i+1:]:
+                if (doctrine1['tradition'] != doctrine2['tradition'] and 
+                    self._check_doctrinal_similarity(doctrine1, doctrine2)):
+                    overlaps.append({
+                        'doctrine1': doctrine1['doctrine_name'],
+                        'tradition1': doctrine1['tradition'],
+                        'doctrine2': doctrine2['doctrine_name'],
+                        'tradition2': doctrine2['tradition'],
+                        'similarity_type': 'conceptual'
+                    })
+        
+        analysis['doctrinal_overlaps'] = overlaps
+        
+        return analysis
+    
+    def _check_doctrinal_similarity(self, doctrine1: Dict[str, Any], doctrine2: Dict[str, Any]) -> bool:
+        """Check if two doctrines have conceptual similarity."""
+        # Simple similarity check based on shared concepts
+        concepts1 = set(doctrine1.get('explanation', '').lower().split())
+        concepts2 = set(doctrine2.get('explanation', '').lower().split())
+        
+        common_concepts = concepts1.intersection(concepts2)
+        
+        # Consider similar if they share significant concepts
+        similarity_threshold = 0.2
+        union_size = len(concepts1.union(concepts2))
+        
+        return len(common_concepts) / union_size > similarity_threshold if union_size > 0 else False
+    
+    def _generate_analysis_summary(self, doctrines: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Generate summary of doctrine analysis."""
+        if not doctrines:
+            return {
+                'total_doctrines': 0,
+                'average_confidence': 0.0,
+                'dominant_tradition': None,
+                'doctrinal_diversity': 0.0
+            }
+        
+        traditions = [d['tradition'] for d in doctrines]
+        tradition_counts = defaultdict(int)
+        
+        total_confidence = sum(d['confidence_score'] for d in doctrines)
+        
+        for tradition in traditions:
+            tradition_counts[tradition] += 1
+        
+        dominant_tradition = max(tradition_counts.items(), key=lambda x: x[1])[0]
+        
+        return {
+            'total_doctrines': len(doctrines),
+            'average_confidence': total_confidence / len(doctrines),
+            'dominant_tradition': dominant_tradition,
+            'tradition_distribution': dict(tradition_counts),
+            'doctrinal_diversity': len(set(traditions)) / len(doctrines),
+            'high_confidence_doctrines': [
+                d['doctrine_name'] for d in doctrines if d['confidence_score'] > 0.7
+            ]
+        }
+
+
+# Backward compatibility alias
+DoctrineAnalysisAgent = DoctrineAnalysisAgent

@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     
     # Database
     database_url: str = Field(
-        default="postgresql://solomon:solomon@localhost:5432/solomon_db",
-        description="PostgreSQL database URL"
+        default="postgresql://postgres:JGRsolomon0924$@localhost:5432/Solomon",
+        description="PostgreSQL database URL",
+        env="DATABASE_URL"
     )
     
     # Vector Database
