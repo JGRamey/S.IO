@@ -1,0 +1,27 @@
+{
+  "limb": "Vedic Texts",
+  "leaf_name": "Upanishads",
+  "leaf_type": "text_collection",
+  "tree_path": "Religion → Hinduism → Vedic Texts → Upanishads",
+  "resources": [
+    {
+      "title": "Sample Upanishads Resource",
+      "author": "Unknown",
+      "category": "general",
+      "description": "Sample resource for Upanishads",
+      "key_concepts": [
+        "concept1",
+        "concept2",
+        "concept3"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "sample_theme"
+    ],
+    "related_limbs": [],
+    "cross_references": []
+  }
+}

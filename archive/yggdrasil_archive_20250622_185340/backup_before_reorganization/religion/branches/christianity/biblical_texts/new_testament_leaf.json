@@ -1,0 +1,62 @@
+{
+  "limb": "Biblical Texts",
+  "leaf_name": "New Testament",
+  "leaf_type": "religious_scripture",
+  "tree_path": "Religion-Tree → Christianity → Biblical Texts → New Testament",
+  "resources": [
+    {
+      "title": "Gospel of Matthew",
+      "category": "gospel",
+      "description": "First Gospel focusing on Jesus as the Messiah for Jewish audiences",
+      "key_themes": ["kingdom_of_heaven", "fulfillment_prophecy", "sermon_on_mount"]
+    },
+    {
+      "title": "Gospel of Mark",
+      "category": "gospel", 
+      "description": "Earliest Gospel emphasizing Jesus' actions and suffering",
+      "key_themes": ["discipleship", "suffering_servant", "messianic_secret"]
+    },
+    {
+      "title": "Gospel of Luke",
+      "category": "gospel",
+      "description": "Gospel emphasizing Jesus' compassion and universal salvation",
+      "key_themes": ["social_justice", "prayer", "holy_spirit", "gentile_inclusion"]
+    },
+    {
+      "title": "Gospel of John",
+      "category": "gospel",
+      "description": "Theological Gospel focusing on Jesus' divine nature",
+      "key_themes": ["word_incarnate", "eternal_life", "love", "signs_miracles"]
+    },
+    {
+      "title": "Acts of the Apostles",
+      "category": "historical",
+      "description": "History of the early Christian church",
+      "key_themes": ["pentecost", "mission_gentiles", "paul_conversion", "church_growth"]
+    },
+    {
+      "title": "Romans",
+      "category": "pauline_epistle",
+      "description": "Paul's systematic exposition of Christian doctrine",
+      "key_themes": ["justification_faith", "sin_redemption", "law_grace"]
+    },
+    {
+      "title": "1 Corinthians",
+      "category": "pauline_epistle",
+      "description": "Paul's letter addressing church divisions and moral issues",
+      "key_themes": ["church_unity", "spiritual_gifts", "love_chapter", "resurrection"]
+    },
+    {
+      "title": "Revelation",
+      "category": "apocalyptic",
+      "description": "Apocalyptic vision of the end times",
+      "key_themes": ["second_coming", "final_judgment", "new_heaven_earth", "symbolic_imagery"]
+    }
+  ],
+  "metadata": {
+    "total_books": 27,
+    "primary_genres": ["gospel", "epistle", "historical", "apocalyptic"],
+    "related_limbs": ["old_testament", "patristic_texts", "biblical_commentaries"],
+    "cross_references": ["christian_philosophy", "church_fathers", "biblical_theology"]
+  }
+}

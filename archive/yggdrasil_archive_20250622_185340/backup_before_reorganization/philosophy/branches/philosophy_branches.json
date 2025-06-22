@@ -1,0 +1,87 @@
+{
+  "tree": "Philosophy-Tree",
+  "branches": {
+    "ancient_philosophy": {
+      "description": "Greek and Roman philosophical traditions",
+      "limbs": {
+        "greek_philosophy": {
+          "leafs": ["plato_works", "aristotle_works", "socratic_dialogues", "presocratic_fragments"]
+        },
+        "roman_philosophy": {
+          "leafs": ["cicero_works", "seneca_letters", "marcus_aurelius_meditations"]
+        },
+        "stoicism": {
+          "leafs": ["epictetus_discourses", "stoic_physics", "stoic_ethics"]
+        },
+        "epicureanism": {
+          "leafs": ["epicurus_letters", "lucretius_nature", "epicurean_ethics"]
+        }
+      }
+    },
+    "medieval_philosophy": {
+      "description": "Philosophical developments during the medieval period",
+      "limbs": {
+        "scholasticism": {
+          "leafs": ["aquinas_summa", "anselm_ontological", "duns_scotus_works"]
+        },
+        "islamic_philosophy": {
+          "leafs": ["avicenna_works", "averroes_commentaries", "al_ghazali_revival"]
+        },
+        "christian_philosophy": {
+          "leafs": ["augustine_confessions", "boethius_consolation", "pseudo_dionysius"]
+        },
+        "jewish_philosophy": {
+          "leafs": ["maimonides_guide", "philo_alexandria", "saadia_gaon"]
+        }
+      }
+    },
+    "ethics_and_moral_philosophy": {
+      "description": "Study of moral principles and values",
+      "limbs": {
+        "virtue_ethics": {
+          "leafs": ["aristotelian_virtue", "modern_virtue_ethics", "character_development"]
+        },
+        "deontological_ethics": {
+          "leafs": ["kantian_ethics", "duty_based_ethics", "categorical_imperative"]
+        },
+        "consequentialism": {
+          "leafs": ["utilitarianism", "mill_bentham", "act_rule_utilitarianism"]
+        },
+        "applied_ethics": {
+          "leafs": ["medical_ethics", "business_ethics", "environmental_ethics", "animal_rights"]
+        }
+      }
+    },
+    "epistemology": {
+      "description": "Theory of knowledge and justified belief",
+      "limbs": {
+        "theories_of_knowledge": {
+          "leafs": ["empiricism", "rationalism", "pragmatism", "reliabilism"]
+        },
+        "skepticism": {
+          "leafs": ["cartesian_doubt", "hume_skepticism", "modern_skepticism"]
+        },
+        "philosophy_of_science": {
+          "leafs": ["scientific_method", "kuhn_paradigms", "popper_falsification"]
+        }
+      }
+    },
+    "eastern_philosophy": {
+      "description": "Philosophical traditions from Asia",
+      "limbs": {
+        "buddhist_philosophy": {
+          "leafs": ["four_noble_truths", "madhyamika", "yogacara", "zen_philosophy"]
+        },
+        "confucianism": {
+          "leafs": ["analects", "mencius", "xunzi", "neo_confucianism"]
+        },
+        "taoism": {
+          "leafs": ["tao_te_ching", "zhuangzi", "wu_wei", "yin_yang"]
+        },
+        "hinduism": {
+          "leafs": ["vedanta", "samkhya", "yoga_philosophy", "advaita"]
+        }
+      }
+    }
+  }
+}

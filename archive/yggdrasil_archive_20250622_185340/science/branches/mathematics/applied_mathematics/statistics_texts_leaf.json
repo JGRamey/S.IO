@@ -1,0 +1,27 @@
+{
+  "limb": "Applied Mathematics",
+  "leaf_name": "Statistics Texts",
+  "leaf_type": "text_collection",
+  "tree_path": "Science → Mathematics → Applied Mathematics → Statistics Texts",
+  "resources": [
+    {
+      "title": "Sample Statistics Texts Resource",
+      "author": "Unknown",
+      "category": "general",
+      "description": "Sample resource for Statistics Texts",
+      "key_concepts": [
+        "concept1",
+        "concept2",
+        "concept3"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "sample_theme"
+    ],
+    "related_limbs": [],
+    "cross_references": []
+  }
+}

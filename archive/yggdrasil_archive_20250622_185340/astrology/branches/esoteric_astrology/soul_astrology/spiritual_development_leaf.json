@@ -1,0 +1,34 @@
+{
+  "limb": "Soul Astrology",
+  "leaf_name": "Spiritual Development",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Esoteric Astrology → Soul Astrology → Spiritual Development",
+  "resources": [
+    {
+      "title": "Sample Spiritual Development Resource",
+      "author": "Traditional Astrologers",
+      "category": "astrological_text",
+      "description": "Traditional and modern sources on spiritual development",
+      "key_concepts": [
+        "astrology",
+        "prediction",
+        "interpretation"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}

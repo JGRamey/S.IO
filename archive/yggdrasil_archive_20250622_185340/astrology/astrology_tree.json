@@ -1,0 +1,24 @@
+{
+  "tree_name": "Astrology",
+  "description": "Comprehensive collection of astrological knowledge, techniques, and traditions",
+  "branches": [
+    "western_astrology",
+    "vedic_astrology",
+    "chinese_astrology",
+    "natal_astrology",
+    "mundane_astrology",
+    "esoteric_astrology"
+  ],
+  "metadata": {
+    "created": "2025-06-22",
+    "structure_version": "1.0",
+    "total_branches": 6,
+    "traditions_covered": [
+      "Western",
+      "Vedic",
+      "Chinese",
+      "Esoteric"
+    ],
+    "scope": "Classical texts, modern methods, predictive techniques, and spiritual astrology"
+  }
+}

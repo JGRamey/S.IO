@@ -1,0 +1,15 @@
+{
+    "field": "Machine Learning Books, Texts, Articles, and Other Sources",
+    "subfields": [
+      "Supervised Learning",
+      "Unsupervised Learning",
+      "Reinforcement Learning",
+      "Deep Learning",
+      "Neural Networks",
+      "Natural Language Processing",
+      "Computer Vision",
+      "Generative Models",
+      "Transfer Learning",
+      "Federated Learning"
+    ]
+}

@@ -1,0 +1,35 @@
+{
+  "limb": "Classical Systems",
+  "leaf_name": "Four Pillars",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Chinese Astrology → Classical Systems → Four Pillars",
+  "resources": [
+    {
+      "title": "Four Pillars of Destiny",
+      "author": "Traditional Chinese Astrologers",
+      "category": "chinese_system",
+      "description": "Ba Zi system using year, month, day, and hour pillars for destiny analysis",
+      "key_concepts": [
+        "heavenly_stems",
+        "earthly_branches",
+        "five_elements",
+        "luck_pillars"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}

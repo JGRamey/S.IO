@@ -1,0 +1,435 @@
+{
+  "forest_name": "S.IO Knowledge Forest",
+  "version": "2.1",
+  "restructure_date": "2025-06-22",
+  "structure_type": "Tree→Branches→Limbs→Leafs",
+  "trees": {
+    "astrology": {
+      "branches": {
+        "chinese_astrology": {
+          "limbs": {
+            "classical_systems": [
+              "chinese_calendar_leaf.json",
+              "four_pillars_leaf.json",
+              "zi_wei_dou_shu_leaf.json"
+            ],
+            "traditional_texts": [
+              "ancient_chronicles_leaf.json",
+              "imperial_records_leaf.json",
+              "taoist_astrology_leaf.json"
+            ],
+            "feng_shui_astrology": [
+              "directional_systems_leaf.json",
+              "flying_stars_leaf.json",
+              "landscape_astrology_leaf.json"
+            ]
+          }
+        },
+        "western_astrology": {
+          "limbs": {
+            "classical_astrology": [
+              "medieval_texts_leaf.json",
+              "ptolemy_tetrabiblos_leaf.json",
+              "renaissance_astrology_leaf.json"
+            ],
+            "horary_astrology": [
+              "electional_astrology_leaf.json",
+              "horary_techniques_leaf.json",
+              "william_lilly_leaf.json"
+            ],
+            "modern_astrology": [
+              "contemporary_methods_leaf.json",
+              "evolutionary_astrology_leaf.json",
+              "psychological_astrology_leaf.json"
+            ]
+          }
+        },
+        "natal_astrology": {
+          "limbs": {
+            "timing_techniques": [
+              "lunar_returns_leaf.json",
+              "progressions_leaf.json",
+              "solar_returns_leaf.json"
+            ],
+            "chart_interpretation": [
+              "aspect_patterns_leaf.json",
+              "birth_chart_analysis_leaf.json",
+              "planetary_dignities_leaf.json"
+            ],
+            "house_systems": [
+              "equal_house_system_leaf.json",
+              "placidus_system_leaf.json",
+              "whole_sign_houses_leaf.json"
+            ]
+          }
+        },
+        "vedic_astrology": {
+          "limbs": {
+            "computational_methods": [
+              "dasha_systems_leaf.json",
+              "divisional_charts_leaf.json",
+              "planetary_periods_leaf.json"
+            ],
+            "classical_texts": [
+              "brihat_parashara_hora_leaf.json",
+              "jaimini_sutras_leaf.json",
+              "saravali_texts_leaf.json"
+            ],
+            "predictive_techniques": [
+              "mundane_astrology_leaf.json",
+              "transit_analysis_leaf.json",
+              "varshphal_methods_leaf.json"
+            ]
+          }
+        },
+        "mundane_astrology": {
+          "limbs": {
+            "political_astrology": [
+              "election_astrology_leaf.json",
+              "national_charts_leaf.json",
+              "world_events_leaf.json"
+            ],
+            "natural_disasters": [
+              "climate_patterns_leaf.json",
+              "earthquake_prediction_leaf.json",
+              "weather_astrology_leaf.json"
+            ],
+            "economic_astrology": [
+              "commodity_astrology_leaf.json",
+              "financial_forecasting_leaf.json",
+              "market_cycles_leaf.json"
+            ]
+          }
+        },
+        "esoteric_astrology": {
+          "limbs": {
+            "karmic_astrology": [
+              "evolutionary_purpose_leaf.json",
+              "lunar_nodes_leaf.json",
+              "past_life_indicators_leaf.json"
+            ],
+            "soul_astrology": [
+              "alice_bailey_leaf.json",
+              "ray_astrology_leaf.json",
+              "spiritual_development_leaf.json"
+            ],
+            "hermetic_astrology": [
+              "alchemical_astrology_leaf.json",
+              "kabbalalistic_astrology_leaf.json",
+              "mystery_school_teachings_leaf.json"
+            ]
+          }
+        }
+      }
+    },
+    "history": {
+      "branches": {
+        "ancient_history": {
+          "limbs": {
+            "mesopotamia": [
+              "babylonian_records_leaf.json",
+              "sumerian_texts_leaf.json"
+            ],
+            "classical_antiquity": [
+              "herodotus_histories_leaf.json",
+              "thucydides_leaf.json"
+            ],
+            "egypt": [
+              "hieroglyphic_texts_leaf.json",
+              "papyrus_collections_leaf.json"
+            ]
+          }
+        },
+        "medieval_history": {
+          "limbs": {
+            "high_medieval": [
+              "crusade_chronicles_leaf.json",
+              "scholastic_records_leaf.json"
+            ],
+            "early_medieval": [
+              "chroniclers_leaf.json",
+              "monastic_records_leaf.json"
+            ],
+            "late_medieval": [
+              "renaissance_precursors_leaf.json"
+            ]
+          }
+        },
+        "modern_history": {
+          "limbs": {
+            "industrial_age": [
+              "social_changes_leaf.json",
+              "technological_advances_leaf.json"
+            ],
+            "renaissance": [
+              "humanism_texts_leaf.json",
+              "reformation_documents_leaf.json"
+            ],
+            "enlightenment": [
+              "philosophes_works_leaf.json",
+              "scientific_revolution_leaf.json"
+            ]
+          }
+        }
+      }
+    },
+    "philosophy": {
+      "branches": {
+        "metaphysics": {
+          "limbs": {
+            "ontological": []
+          }
+        },
+        "phenomenology": {
+          "limbs": {}
+        },
+        "philosophy of religion": {
+          "limbs": {}
+        },
+        "ancient_philosophy": {
+          "limbs": {
+            "hellenistic_philosophy": [
+              "epicurean_texts_leaf.json",
+              "skeptic_texts_leaf.json"
+            ],
+            "greek_philosophy": [
+              "aristotle_works_leaf.json",
+              "plato_works_leaf.json",
+              "socratic_dialogues_leaf.json"
+            ],
+            "roman_philosophy": [
+              "cicero_works_leaf.json",
+              "stoic_texts_leaf.json"
+            ]
+          }
+        },
+        "logic": {
+          "limbs": {}
+        },
+        "political philosophy": {
+          "limbs": {}
+        },
+        "existentialism": {
+          "limbs": {}
+        },
+        "ethics": {
+          "limbs": {}
+        },
+        "eastern philosophy": {
+          "limbs": {
+            "limbs.json": []
+          }
+        },
+        "medieval_philosophy": {
+          "limbs": {
+            "jewish_philosophy": [
+              "maimonides_works_leaf.json"
+            ],
+            "scholasticism": [
+              "aquinas_works_leaf.json",
+              "augustine_works_leaf.json"
+            ],
+            "islamic_philosophy": [
+              "averroes_works_leaf.json",
+              "avicenna_works_leaf.json"
+            ]
+          }
+        },
+        "modern_philosophy": {
+          "limbs": {
+            "german_idealism": [
+              "hegel_works_leaf.json",
+              "kant_works_leaf.json"
+            ],
+            "empiricism": [
+              "hume_works_leaf.json",
+              "locke_works_leaf.json"
+            ],
+            "rationalism": [
+              "descartes_works_leaf.json",
+              "spinoza_works_leaf.json"
+            ]
+          }
+        },
+        "epistemology": {
+          "limbs": {}
+        },
+        "contemporary_philosophy": {
+          "limbs": {
+            "continental_philosophy": [
+              "heidegger_works_leaf.json",
+              "sartre_works_leaf.json"
+            ],
+            "existentialism": [
+              "kierkegaard_works_leaf.json",
+              "nietzsche_works_leaf.json"
+            ],
+            "analytic_philosophy": [
+              "russell_works_leaf.json",
+              "wittgenstein_works_leaf.json"
+            ]
+          }
+        },
+        "aesthetics": {
+          "limbs": {}
+        },
+        "philosophers": {
+          "limbs": {
+            "limbs.json": []
+          }
+        }
+      }
+    },
+    "religion": {
+      "branches": {
+        "islam": {
+          "limbs": {
+            "jurisprudence": [
+              "fiqh_texts_leaf.json",
+              "sharia_sources_leaf.json"
+            ],
+            "islamic_texts": [
+              "hadith_collections_leaf.json",
+              "quran_leaf.json"
+            ],
+            "islamic_philosophy": [
+              "kalam_texts_leaf.json",
+              "sufi_literature_leaf.json"
+            ]
+          }
+        },
+        "buddhism": {
+          "limbs": {
+            "commentaries": [
+              "abhidhamma_leaf.json",
+              "scholastic_texts_leaf.json"
+            ],
+            "canonical_texts": [
+              "sutras_leaf.json",
+              "tripitaka_leaf.json"
+            ],
+            "meditation_texts": [
+              "vipassana_texts_leaf.json",
+              "zen_literature_leaf.json"
+            ]
+          }
+        },
+        "christianity": {
+          "limbs": {
+            "patristic_literature": [
+              "apostolic_fathers_leaf.json",
+              "church_fathers_leaf.json"
+            ],
+            "catholic": [],
+            "biblical_texts": [
+              "apocrypha_leaf.json",
+              "new_testament_leaf.json",
+              "old_testament_leaf.json"
+            ],
+            "denominational_texts": [
+              "catholic_catechism_leaf.json",
+              "orthodox_texts_leaf.json",
+              "protestant_confessions_leaf.json"
+            ],
+            "protestant": [],
+            "orthodox": []
+          }
+        },
+        "judaism": {
+          "limbs": {
+            "hebrew_scriptures": [
+              "talmud_leaf.json",
+              "tanakh_leaf.json"
+            ],
+            "mystical_texts": [
+              "kabbalah_leaf.json",
+              "zohar_leaf.json"
+            ],
+            "rabbinical_literature": [
+              "midrash_leaf.json",
+              "responsa_leaf.json"
+            ]
+          }
+        },
+        "hinduism": {
+          "limbs": {
+            "philosophical_texts": [
+              "bhagavad_gita_leaf.json",
+              "vedanta_texts_leaf.json"
+            ],
+            "epic_literature": [
+              "mahabharata_leaf.json",
+              "ramayana_leaf.json"
+            ],
+            "vedic_texts": [
+              "upanishads_leaf.json",
+              "vedas_leaf.json"
+            ]
+          }
+        }
+      }
+    },
+    "science": {
+      "branches": {
+        "astronomy": {
+          "limbs": {}
+        },
+        "chemistry": {
+          "limbs": {}
+        },
+        "computer_science": {
+          "limbs": {
+            "theoretical_cs": [
+              "algorithms_texts_leaf.json",
+              "complexity_theory_leaf.json"
+            ],
+            "artificial_intelligence": [
+              "cognitive_science_leaf.json",
+              "machine_learning_texts_leaf.json"
+            ],
+            "programming": [
+              "language_design_leaf.json",
+              "software_engineering_leaf.json"
+            ],
+            "limbs": []
+          }
+        },
+        "mathematics": {
+          "limbs": {
+            "pure_mathematics": [
+              "euclid_elements_leaf.json",
+              "number_theory_texts_leaf.json"
+            ],
+            "applied_mathematics": [
+              "calculus_texts_leaf.json",
+              "statistics_texts_leaf.json"
+            ],
+            "modern_mathematics": [
+              "abstract_algebra_leaf.json",
+              "topology_texts_leaf.json"
+            ]
+          }
+        },
+        "physics": {
+          "limbs": {
+            "relativity": [
+              "einstein_papers_leaf.json",
+              "spacetime_texts_leaf.json"
+            ],
+            "classical_physics": [
+              "maxwell_equations_leaf.json",
+              "newton_principia_leaf.json"
+            ],
+            "quantum_mechanics": [
+              "heisenberg_papers_leaf.json",
+              "schrodinger_papers_leaf.json"
+            ]
+          }
+        },
+        "biology": {
+          "limbs": {}
+        }
+      }
+    }
+  }
+}

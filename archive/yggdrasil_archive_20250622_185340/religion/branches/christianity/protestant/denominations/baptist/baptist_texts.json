@@ -1,0 +1,59 @@
+{
+  "limb": "Protestant Denominations",
+  "leaf_name": "Baptist Texts",
+  "leaf_type": "religious_literature",
+  "tree_path": "Religion-Tree → Christianity → Protestant Denominations → Baptist → Baptist Texts",
+  "resources": [
+    {
+      "title": "Pilgrim's Progress",
+      "author": "John Bunyan",
+      "category": "christian_allegory",
+      "description": "Classic Christian allegory by Baptist preacher and writer",
+      "key_themes": ["spiritual_journey", "salvation", "christian_life", "persecution"]
+    },
+    {
+      "title": "The Spurgeon Collection",
+      "author": "Charles Haddon Spurgeon",
+      "category": "sermons_writings",
+      "description": "Sermons and writings of the 'Prince of Preachers'",
+      "key_themes": ["biblical_preaching", "reformed_theology", "evangelism", "pastoral_care"]
+    },
+    {
+      "title": "A Treatise on Church Order",
+      "author": "J.L. Dagg",
+      "category": "ecclesiology",
+      "description": "Foundational work on Baptist church government and discipline",
+      "key_themes": ["church_polity", "discipline", "membership", "congregational_authority"]
+    },
+    {
+      "title": "The Trail of Blood",
+      "author": "J.M. Carroll",
+      "category": "historical_narrative",
+      "description": "Baptist historical succession theory",
+      "key_themes": ["baptist_history", "persecution", "succession", "primitive_christianity"]
+    },
+    {
+      "title": "Baptist Confessions of Faith",
+      "author": "Various",
+      "category": "confessional_documents",
+      "description": "Historical Baptist confessions and statements of faith",
+      "key_themes": ["doctrinal_standards", "biblical_authority", "reformed_theology", "congregational_polity"]
+    },
+    {
+      "title": "The Complete Works of Andrew Fuller",
+      "author": "Andrew Fuller",
+      "category": "theological_writings",
+      "description": "Influential Baptist theologian's complete works",
+      "key_themes": ["calvinistic_soteriology", "missions", "church_order", "apologetics"]
+    }
+  ],
+  "metadata": {
+    "denomination": "Baptist",
+    "tradition": "Protestant",
+    "total_resources": 6,
+    "time_periods": ["17th_century", "18th_century", "19th_century", "20th_century"],
+    "primary_themes": ["biblical_authority", "congregational_polity", "evangelism", "missions"],
+    "related_limbs": ["baptist_doctrine", "baptist_history", "puritan_literature", "reformed_texts"],
+    "cross_references": ["christian_classics", "reformation_literature", "evangelical_texts"]
+  }
+}

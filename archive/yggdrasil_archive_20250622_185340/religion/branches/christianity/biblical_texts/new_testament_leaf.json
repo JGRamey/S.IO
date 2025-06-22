@@ -1,0 +1,111 @@
+{
+  "limb": "Biblical Texts",
+  "leaf_name": "New Testament",
+  "leaf_type": "sacred_scripture",
+  "tree_path": "Religion → Christianity → Biblical Texts → New Testament",
+  "resources": [
+    {
+      "title": "Gospel of Matthew",
+      "author": "Traditional: Matthew the Apostle",
+      "category": "gospel",
+      "description": "First Gospel presenting Jesus as the Jewish Messiah",
+      "key_concepts": [
+        "messianic_prophecy",
+        "sermon_on_mount",
+        "kingdom_of_heaven",
+        "genealogy"
+      ]
+    },
+    {
+      "title": "Gospel of Mark",
+      "author": "Traditional: John Mark",
+      "category": "gospel",
+      "description": "Earliest Gospel emphasizing Jesus' actions and suffering",
+      "key_concepts": [
+        "messianic_secret",
+        "discipleship",
+        "passion_narrative",
+        "divine_sonship"
+      ]
+    },
+    {
+      "title": "Gospel of Luke",
+      "author": "Traditional: Luke the Physician",
+      "category": "gospel",
+      "description": "Gospel emphasizing Jesus' compassion for outcasts and universal salvation",
+      "key_concepts": [
+        "social_justice",
+        "gentile_mission",
+        "holy_spirit",
+        "prayer"
+      ]
+    },
+    {
+      "title": "Gospel of John",
+      "author": "Traditional: John the Apostle",
+      "category": "gospel",
+      "description": "Theological Gospel presenting Jesus as the divine Word",
+      "key_concepts": [
+        "logos",
+        "eternal_life",
+        "i_am_sayings",
+        "divine_nature"
+      ]
+    },
+    {
+      "title": "Acts of the Apostles",
+      "author": "Traditional: Luke the Physician",
+      "category": "historical_narrative",
+      "description": "History of the early Christian church and mission",
+      "key_concepts": [
+        "pentecost",
+        "gentile_mission",
+        "paul_conversion",
+        "church_growth"
+      ]
+    },
+    {
+      "title": "Romans",
+      "author": "Paul the Apostle",
+      "category": "pauline_epistle",
+      "description": "Paul's systematic exposition of Christian theology",
+      "key_concepts": [
+        "justification_by_faith",
+        "sin_and_salvation",
+        "predestination",
+        "law_and_grace"
+      ]
+    },
+    {
+      "title": "Revelation",
+      "author": "Traditional: John of Patmos",
+      "category": "apocalyptic_literature",
+      "description": "Prophetic vision of the end times and Christ's return",
+      "key_concepts": [
+        "apocalypse",
+        "seven_churches",
+        "beast",
+        "new_jerusalem"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_works": 27,
+    "primary_themes": [
+      "salvation",
+      "christology",
+      "eschatology",
+      "church_formation"
+    ],
+    "related_limbs": [
+      "old_testament",
+      "patristic_literature",
+      "denominational_texts"
+    ],
+    "cross_references": [
+      "christian_theology",
+      "biblical_interpretation",
+      "church_history"
+    ]
+  }
+}

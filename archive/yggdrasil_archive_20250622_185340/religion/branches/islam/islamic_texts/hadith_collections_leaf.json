@@ -1,0 +1,27 @@
+{
+  "limb": "Islamic Texts",
+  "leaf_name": "Hadith Collections",
+  "leaf_type": "text_collection",
+  "tree_path": "Religion → Islam → Islamic Texts → Hadith Collections",
+  "resources": [
+    {
+      "title": "Sample Hadith Collections Resource",
+      "author": "Unknown",
+      "category": "general",
+      "description": "Sample resource for Hadith Collections",
+      "key_concepts": [
+        "concept1",
+        "concept2",
+        "concept3"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "sample_theme"
+    ],
+    "related_limbs": [],
+    "cross_references": []
+  }
+}

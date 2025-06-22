@@ -1,0 +1,34 @@
+{
+  "limb": "Economic Astrology",
+  "leaf_name": "Financial Forecasting",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Mundane Astrology → Economic Astrology → Financial Forecasting",
+  "resources": [
+    {
+      "title": "Sample Financial Forecasting Resource",
+      "author": "Traditional Astrologers",
+      "category": "astrological_text",
+      "description": "Traditional and modern sources on financial forecasting",
+      "key_concepts": [
+        "astrology",
+        "prediction",
+        "interpretation"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "limb": "Greek Philosophy",
+  "leaf_name": "Plato Works",
+  "leaf_type": "philosophical_texts",
+  "tree_path": "Philosophy-Tree → Ancient Philosophy → Greek Philosophy → Plato Works",
+  "resources": [
+    {
+      "title": "The Republic",
+      "author": "Plato",
+      "category": "political_philosophy",
+      "description": "Plato's masterwork on justice, the ideal state, and the theory of Forms",
+      "key_concepts": ["justice", "philosopher_kings", "allegory_of_cave", "theory_of_forms"]
+    },
+    {
+      "title": "The Apology",
+      "author": "Plato",
+      "category": "socratic_dialogue",
+      "description": "Socrates' defense speech at his trial",
+      "key_concepts": ["socratic_method", "virtue", "wisdom", "examined_life"]
+    },
+    {
+      "title": "Phaedo",
+      "author": "Plato",
+      "category": "metaphysics",
+      "description": "Dialogue on the immortality of the soul",
+      "key_concepts": ["soul_immortality", "theory_of_forms", "recollection", "death"]
+    },
+    {
+      "title": "Meno",
+      "author": "Plato",
+      "category": "epistemology",
+      "description": "Dialogue on learning and knowledge",
+      "key_concepts": ["learning_paradox", "recollection", "virtue", "geometry_lesson"]
+    },
+    {
+      "title": "Timaeus",
+      "author": "Plato",
+      "category": "cosmology",
+      "description": "Plato's account of the creation of the universe",
+      "key_concepts": ["demiurge", "cosmic_order", "geometrical_atoms", "world_soul"]
+    }
+  ],
+  "metadata": {
+    "total_works": 5,
+    "primary_themes": ["metaphysics", "epistemology", "political_philosophy", "ethics"],
+    "related_limbs": ["aristotle_works", "socratic_dialogues", "presocratic_fragments"],
+    "cross_references": ["virtue_ethics", "political_philosophy", "metaphysics"]
+  }
+}

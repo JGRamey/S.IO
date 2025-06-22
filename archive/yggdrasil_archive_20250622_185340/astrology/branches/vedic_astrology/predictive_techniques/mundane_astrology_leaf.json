@@ -1,0 +1,34 @@
+{
+  "limb": "Predictive Techniques",
+  "leaf_name": "Mundane Astrology",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Vedic Astrology → Predictive Techniques → Mundane Astrology",
+  "resources": [
+    {
+      "title": "Sample Mundane Astrology Resource",
+      "author": "Traditional Astrologers",
+      "category": "astrological_text",
+      "description": "Traditional and modern sources on mundane astrology",
+      "key_concepts": [
+        "astrology",
+        "prediction",
+        "interpretation"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}

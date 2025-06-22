@@ -1,0 +1,27 @@
+{
+  "limb": "Epic Literature",
+  "leaf_name": "Mahabharata",
+  "leaf_type": "text_collection",
+  "tree_path": "Religion → Hinduism → Epic Literature → Mahabharata",
+  "resources": [
+    {
+      "title": "Sample Mahabharata Resource",
+      "author": "Unknown",
+      "category": "general",
+      "description": "Sample resource for Mahabharata",
+      "key_concepts": [
+        "concept1",
+        "concept2",
+        "concept3"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "sample_theme"
+    ],
+    "related_limbs": [],
+    "cross_references": []
+  }
+}

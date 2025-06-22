@@ -1,0 +1,36 @@
+{
+  "limb": "Classical Astrology",
+  "leaf_name": "Ptolemy Tetrabiblos",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Western Astrology → Classical Astrology → Ptolemy Tetrabiblos",
+  "resources": [
+    {
+      "title": "Tetrabiblos",
+      "author": "Claudius Ptolemy",
+      "category": "classical_foundation",
+      "description": "Foundational text of Western astrology, establishing the four-book system",
+      "key_concepts": [
+        "four_elements",
+        "planetary_qualities",
+        "houses",
+        "aspects",
+        "mundane_astrology"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}

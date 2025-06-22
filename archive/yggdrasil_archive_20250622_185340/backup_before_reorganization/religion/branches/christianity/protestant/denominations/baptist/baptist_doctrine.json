@@ -1,0 +1,46 @@
+{
+  "limb": "Protestant Denominations",
+  "leaf_name": "Baptist Doctrine",
+  "leaf_type": "religious_doctrine",
+  "tree_path": "Religion-Tree → Christianity → Protestant Denominations → Baptist → Baptist Doctrine",
+  "resources": [
+    {
+      "title": "Baptist Faith and Message",
+      "category": "denominational_confession",
+      "description": "Southern Baptist Convention's primary doctrinal statement",
+      "key_themes": ["biblical_authority", "salvation_by_grace", "believer_baptism", "congregational_polity"]
+    },
+    {
+      "title": "The New Hampshire Confession",
+      "category": "historical_confession",
+      "description": "Historic Baptist confession of faith from 1833",
+      "key_themes": ["trinity", "total_depravity", "justification", "perseverance_saints"]
+    },
+    {
+      "title": "Baptist Distinctive Doctrines",
+      "category": "theological_principles",
+      "description": "Core beliefs that distinguish Baptist churches",
+      "key_themes": ["soul_liberty", "priesthood_believers", "autonomy_local_church", "ordinances"]
+    },
+    {
+      "title": "Believer's Baptism by Immersion",
+      "category": "sacramental_theology",
+      "description": "Baptist understanding of baptism as symbol of faith",
+      "key_themes": ["symbolic_act", "public_profession", "burial_resurrection", "following_christ"]
+    },
+    {
+      "title": "Congregational Church Government",
+      "category": "ecclesiology",
+      "description": "Baptist principles of church governance",
+      "key_themes": ["democratic_process", "local_autonomy", "pastoral_leadership", "deacon_ministry"]
+    }
+  ],
+  "metadata": {
+    "denomination": "Baptist",
+    "tradition": "Protestant",
+    "total_resources": 5,
+    "primary_themes": ["biblical_authority", "believer_baptism", "congregational_polity", "soul_liberty"],
+    "related_limbs": ["baptist_texts", "baptist_history", "southern_baptist", "american_baptist"],
+    "cross_references": ["protestant_denominations", "reformation_theology", "evangelical_doctrine"]
+  }
+}

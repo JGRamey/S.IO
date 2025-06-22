@@ -1,0 +1,34 @@
+{
+  "limb": "Computational Methods",
+  "leaf_name": "Dasha Systems",
+  "leaf_type": "astrological_texts",
+  "tree_path": "Astrology → Vedic Astrology → Computational Methods → Dasha Systems",
+  "resources": [
+    {
+      "title": "Sample Dasha Systems Resource",
+      "author": "Traditional Astrologers",
+      "category": "astrological_text",
+      "description": "Traditional and modern sources on dasha systems",
+      "key_concepts": [
+        "astrology",
+        "prediction",
+        "interpretation"
+      ]
+    }
+  ],
+  "metadata": {
+    "total_resources": 1,
+    "primary_themes": [
+      "astrology",
+      "divination",
+      "celestial_influence"
+    ],
+    "related_limbs": [],
+    "cross_references": [
+      "astronomy",
+      "mathematics",
+      "philosophy",
+      "religion"
+    ]
+  }
+}
