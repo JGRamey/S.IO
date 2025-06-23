@@ -1,6 +1,6 @@
 # Solomon-Sophia: Local AI Spiritual Text Analysis
 
-A comprehensive spiritual text analysis system powered by **local AI models** including Hugging Face Transformers, Ollama, and optional TensorFlow. No external API keys required - everything runs locally for complete privacy and control.
+A comprehensive spiritual/knowledge text analysis system powered by **local AI models** including Hugging Face Transformers, Ollama, and optional TensorFlow. No external API keys required - everything runs locally for complete privacy and control.
 
 ## 🌟 Features
 
