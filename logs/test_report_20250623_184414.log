@@ -1,0 +1,29 @@
+[2025-06-23 22:44:14 UTC] 🎯 YGGDRASIL/S.IO COMPREHENSIVE TEST EXECUTION
+[2025-06-23 22:44:14 UTC] ================================================================================
+[2025-06-23 22:44:14 UTC] Test Type: quick
+[2025-06-23 22:44:14 UTC] Verbose Mode: True
+[2025-06-23 22:44:14 UTC] Coverage Analysis: False
+[2025-06-23 22:44:14 UTC] Log File: /Users/grant/Desktop/Solomon/Database/S.IO/logs/test_report_20250623_184414.log
+[2025-06-23 22:44:14 UTC] 
+[2025-06-23 22:44:14 UTC] ⚡ Quick Tests (fail fast)
+[2025-06-23 22:44:14 UTC] Command: python3 -m pytest --tb=short --strict-warnings -v -m unit --maxfail=5 -x tests/
+[2025-06-23 22:44:14 UTC] 
+[2025-06-23 22:44:14 UTC] 🔄 Executing tests...
+[2025-06-23 22:44:19 UTC] 📊 TEST OUTPUT:
+[2025-06-23 22:44:19 UTC] ----------------------------------------
+[2025-06-23 22:44:19 UTC] STDERR:
+[2025-06-23 22:44:19 UTC] ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: unrecognized arguments: --strict-warnings
+  inifile: /Users/grant/Desktop/Solomon/Database/S.IO/pytest.ini
+  rootdir: /Users/grant/Desktop/Solomon/Database/S.IO
+
+
+[2025-06-23 22:44:19 UTC] 
+[2025-06-23 22:44:19 UTC] 📈 TEST EXECUTION SUMMARY:
+[2025-06-23 22:44:19 UTC] ========================================
+[2025-06-23 22:44:19 UTC] Status: ❌ FAILED
+[2025-06-23 22:44:19 UTC] Return Code: 4
+[2025-06-23 22:44:19 UTC] Execution Time: 5.17 seconds
+[2025-06-23 22:44:19 UTC] Test Type: quick
+[2025-06-23 22:44:19 UTC] Timestamp: 2025-06-23T22:44:19.372957+00:00
+[2025-06-23 22:44:19 UTC] 📋 JSON Report saved: /Users/grant/Desktop/Solomon/Database/S.IO/logs/latest_test_report.json

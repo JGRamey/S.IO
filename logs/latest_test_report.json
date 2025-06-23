@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-06-23T22:46:04.679537+00:00",
+  "test_type": "all",
+  "success": false,
+  "execution_time_seconds": 39.45,
+  "return_code": 1,
+  "statistics": {
+    "failed": 4,
+    "passed": 20,
+    "warnings": 63
+  },
+  "command": [
+    "python3",
+    "-m",
+    "pytest",
+    "--tb=short",
+    "-v",
+    "--cov=yggdrasil",
+    "--cov-report=html:/Users/grant/Desktop/Solomon/Database/S.IO/logs/coverage",
+    "--cov-report=term-missing",
+    "--cov-report=json:/Users/grant/Desktop/Solomon/Database/S.IO/logs/coverage.json",
+    "tests/",
+    "--ignore=tests/conftest.py"
+  ],
+  "log_file": "/Users/grant/Desktop/Solomon/Database/S.IO/logs/test_report_20250623_184525.log",
+  "project_root": "/Users/grant/Desktop/Solomon/Database/S.IO",
+  "python_version": "3.13.5 (main, Jun 11 2025, 15:36:57) [Clang 16.0.0 (clang-1600.0.26.6)]",
+  "environment": {
+    "platform": "darwin",
+    "cwd": "/Users/grant/Desktop/Solomon/Database/S.IO"
+  },
+  "coverage": {
+    "total_coverage": 19.19089245781663,
+    "files_covered": 41
+  }
+}
