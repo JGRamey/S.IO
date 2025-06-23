@@ -37,7 +37,7 @@ def analyze(
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file for results"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
 ):
-    """Analyze spiritual text using Yggdrasil agents."""
+    """Analyze spiritual texts using Yggdrasil agents."""
     
     # Get text content
     if file:

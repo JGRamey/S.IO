@@ -44,7 +44,7 @@ find . -name "*.py" -exec grep -l "from solomon" {} \;
 
 **Required Changes**:
 
-**File**: `config/alembic/env.py`
+**File**: `config/alembic/env.py` !!DONE!!
 ```python
 # Line 9: Change
 from solomon.database.models import Base
@@ -55,7 +55,7 @@ from yggdrasil.database.models import Base
 from yggdrasil.config import settings
 ```
 
-**File**: `yggdrasil/api/main.py`
+**File**: `yggdrasil/api/main.py` !!DONE!!
 ```python
 # Line 12: Change
 from solomon.config import settings
@@ -68,7 +68,7 @@ from yggdrasil.database import get_db_session, DatabaseManager
 from yggdrasil.agents.orchestrator import AgentOrchestrator
 ```
 
-**File**: `yggdrasil/cli.py`
+**File**: `yggdrasil/cli.py` !!DONE!!
 ```python
 # Line 15: Change
 from solomon.config import settings
@@ -85,7 +85,7 @@ from yggdrasil.database.models import TextType
 from yggdrasil.scraping.scraping_manager import ScrapingManager
 ```
 
-**All Agent Files** (`yggdrasil/agents/*.py`):
+**All Agent Files** (`yggdrasil/agents/*.py`): !!DONE!!
 ```python
 # Change in ALL agent files:
 from solomon.config import settings
@@ -93,7 +93,7 @@ from solomon.config import settings
 from yggdrasil.config import settings
 ```
 
-**File**: `yggdrasil/database/connection.py`
+**File**: `yggdrasil/database/connection.py` !!DONE!!
 ```python
 # Line 11: Change
 from solomon.config import settings
@@ -101,7 +101,7 @@ from solomon.config import settings
 from yggdrasil.config import settings
 ```
 
-**File**: `yggdrasil/api/routes/health.py`
+**File**: `yggdrasil/api/routes/health.py` !!DONE!!
 ```python
 # Lines 9, 27: Change
 from solomon.config import settings
@@ -114,11 +114,18 @@ from yggdrasil.api.main import orchestrator
 from yggdrasil.database import db_manager
 ```
 
+** Also updated yggdrasil/api/routes/analysis.py !!DONE!!**
+from solomon to yggdrasil 
+
+**File**: `yggdrasil/cli.py` !!DONE!!
+from solomon to yggdrasil on all code lines
+
 ### **1.2 Standardize Database Ports (Priority: CRITICAL)**
 
 **Problem**: Mixed ports (5432 vs 5431) causing connection failures
 
-**Decision**: Standardize on port **5432** (PostgreSQL default)
+**Decision**: Standardize on port **5432** (PostgreSQL default) 
+!! I didn't change the port because we are using port 5431 for Qdrant !! Let's test this and see if it is a problem, we can change it to 5432 or another port if needed!!
 
 **Files to Update**:
 
@@ -154,7 +161,7 @@ self.db_url = "postgresql://postgres:JGRsolomon0924$@localhost:5431/yggdrasil"
 self.db_url = "postgresql://postgres:JGRsolomon0924$@localhost:5432/yggdrasil"
 ```
 
-**File**: `deployment/docker/docker-compose.yml`
+**File**: `deployment/docker/docker-compose.yml` ## See if we can change it to 5431:5431 instead of using 5431:5432 or 5432:5432 ##
 ```yaml
 # Line 12: Change
 ports:
@@ -166,7 +173,7 @@ ports:
 
 ### **1.3 Fix Module Resolution Issues (Priority: CRITICAL)**
 
-**File**: `tests/test_mcp_agents.py`
+**File**: `tests/test_mcp_agents.py` !!DONE!!
 ```python
 # Line 9: Change
 from yggdrasil_mcp_client import YggdrasilMCPClient
@@ -174,7 +181,7 @@ from yggdrasil_mcp_client import YggdrasilMCPClient
 from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
 ```
 
-**File**: `tests/quick_agent_test.py`
+**File**: `tests/quick_agent_test.py` !!DONE!!
 ```python
 # Line 18: Change
 from yggdrasil_mcp_client import YggdrasilMCPClient
@@ -182,7 +189,7 @@ from yggdrasil_mcp_client import YggdrasilMCPClient
 from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
 ```
 
-**File**: `deployment/docker/Dockerfile`
+**File**: `deployment/docker/Dockerfile` !!DONE!! ## Do we have to label it yggdrasil.api.main instead of yggdrasil.main? ##
 ```dockerfile
 # Line 44: Change
 CMD ["python", "-m", "solomon.main"]
@@ -196,13 +203,18 @@ CMD ["python", "-m", "yggdrasil.api.main"]
 
 **Action**: Standardize on `YggdrasilText` model
 
-**File**: `yggdrasil/database/models.py`
+**File**: `yggdrasil/database/models.py` ## We need to update this entire file using the updated schema classes and models from the yggdrasil database - Make sure to update all references in the yggdrasil database for alignment - If things are not aligned, we will have to update the yggdrasil database to match all files and vice versa - Please ask me before doing this so we can make sure the schema is correct and classes are named correctly ##
+## We will do this after we have completed this improvement plan by using the plan.md file in the root directory ##
 ```python
 # Rename SpiritualText class to YggdrasilText for consistency
 class YggdrasilText(Base):  # Changed from SpiritualText
     __tablename__ = "yggdrasil_texts"
     # ... rest remains the same
 ```
+
+## Implement indexes for Yggdrasil database - Split into multiple indexes per table starting from all indexes in the yggdrasil database ##
+
+## Use
 
 **Update all references** in:
 - `yggdrasil/scraping/*.py` files  
@@ -582,3 +594,19 @@ async def db_manager():
 **Risk Level**: Low (configuration fixes, not architectural changes)  
 
 This project has **exceptional potential** and with these fixes will be a **world-class AI system** for spiritual text analysis.
+
+
+## 📊 **Additional Future Improvements**
+
+1. Change or impliment langGraph & PydanticAI
+2. Implement Crawl4AI or use it as a reference for improving the web scraper
+3. Improve database schema
+4. Look into archon for agent system
+
+
+## 📊 **Future Fixes**
+
+1. Fix all remaining import path errors
+2. Change code to use environment variables
+3. Fix code to match database schema - Example SpiritualText to YggdrasilText and FieldCategory and SubfieldCategory to Yggdrasil tree/branch/limb/leaf etc. or whatever schema is used
+Example: base.py line 20 (already notated)
