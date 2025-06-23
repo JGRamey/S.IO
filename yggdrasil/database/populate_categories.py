@@ -8,8 +8,8 @@ from datetime import datetime
 from typing import Dict, List, Any
 
 from sqlalchemy import select
-from solomon.database.connection import db_manager
-from solomon.database.models import FieldCategory, SubfieldCategory
+from yggdrasil.database.connection import db_manager
+from yggdrasil.database.models import FieldCategory, SubfieldCategory
 
 
 class CategoryPopulator:

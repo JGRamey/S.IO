@@ -6,9 +6,17 @@ Tests all agent functionality through the MCP interface
 
 import asyncio
 import json
-from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
+import sys
+import os
+import pytest
+
+# Add the project root to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from yggdrasil_mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
 from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT, SAMPLE_PHILOSOPHICAL_TEXT, BIASED_TEXT_SAMPLE
 
+@pytest.mark.asyncio
 async def test_mcp_agents():
     """Test all MCP agent functionality"""
     

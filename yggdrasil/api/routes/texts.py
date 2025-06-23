@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
-from solomon.database import get_db_session, SpiritualText, TextType, Language
-from solomon.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
+from yggdrasil.database import get_db_session, YggdrasilText, TextType, Language
+from yggdrasil.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
 
 router = APIRouter()
 
@@ -68,7 +68,7 @@ class TextSearchResponse(BaseModel):
 
 def get_orchestrator() -> AgentOrchestrator:
     """Get orchestrator dependency."""
-    from solomon.api.main import orchestrator
+    from yggdrasil.api.main import orchestrator
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not available")
     return orchestrator
@@ -82,7 +82,7 @@ async def create_text(
     """Create a new spiritual text."""
     try:
         # Create new text
-        new_text = SpiritualText(
+        new_text = YggdrasilText(
             title=text_data.title,
             text_type=text_data.text_type,
             language=text_data.language,
@@ -114,7 +114,7 @@ async def get_text(
     """Get a specific text by ID."""
     try:
         result = await db.execute(
-            select(SpiritualText).where(SpiritualText.id == text_id)
+            select(YggdrasilText).where(YggdrasilText.id == text_id)
         )
         text = result.scalar_one_or_none()
         
@@ -139,17 +139,17 @@ async def list_texts(
 ):
     """List texts with optional filtering."""
     try:
-        query = select(SpiritualText)
+        query = select(YggdrasilText)
         
         # Apply filters
         if text_type:
-            query = query.where(SpiritualText.text_type == text_type)
+            query = query.where(YggdrasilText.text_type == text_type)
         if language:
-            query = query.where(SpiritualText.language == language)
+            query = query.where(YggdrasilText.language == language)
         
         # Apply pagination
         query = query.offset(offset).limit(limit)
-        query = query.order_by(SpiritualText.created_at.desc())
+        query = query.order_by(YggdrasilText.created_at.desc())
         
         result = await db.execute(query)
         texts = result.scalars().all()
@@ -188,20 +188,20 @@ async def search_texts(
             raise HTTPException(status_code=500, detail=f"Search failed: {result.error}")
         
         # Also search local database
-        query = select(SpiritualText)
+        query = select(YggdrasilText)
         
         # Simple text search in content and title
         search_term = f"%{search_request.query}%"
         query = query.where(
-            (SpiritualText.title.ilike(search_term)) |
-            (SpiritualText.content.ilike(search_term))
+            (YggdrasilText.title.ilike(search_term)) |
+            (YggdrasilText.content.ilike(search_term))
         )
         
         # Apply filters
         if search_request.text_type:
-            query = query.where(SpiritualText.text_type == search_request.text_type)
+            query = query.where(YggdrasilText.text_type == search_request.text_type)
         if search_request.language:
-            query = query.where(SpiritualText.language == search_request.language)
+            query = query.where(YggdrasilText.language == search_request.language)
         
         query = query.limit(search_request.limit)
         db_result = await db.execute(query)
@@ -232,7 +232,7 @@ async def update_text(
     """Update an existing text."""
     try:
         result = await db.execute(
-            select(SpiritualText).where(SpiritualText.id == text_id)
+            select(YggdrasilText).where(YggdrasilText.id == text_id)
         )
         text = result.scalar_one_or_none()
         
@@ -271,7 +271,7 @@ async def delete_text(
     """Delete a text."""
     try:
         result = await db.execute(
-            select(SpiritualText).where(SpiritualText.id == text_id)
+            select(YggdrasilText).where(YggdrasilText.id == text_id)
         )
         text = result.scalar_one_or_none()
         
@@ -318,18 +318,18 @@ async def get_text_statistics(db: AsyncSession = Depends(get_db_session)):
     try:
         # Count by text type
         type_counts = await db.execute(
-            select(SpiritualText.text_type, func.count(SpiritualText.id))
-            .group_by(SpiritualText.text_type)
+            select(YggdrasilText.text_type, func.count(YggdrasilText.id))
+            .group_by(YggdrasilText.text_type)
         )
         
         # Count by language
         language_counts = await db.execute(
-            select(SpiritualText.language, func.count(SpiritualText.id))
-            .group_by(SpiritualText.language)
+            select(YggdrasilText.language, func.count(YggdrasilText.id))
+            .group_by(YggdrasilText.language)
         )
         
         # Total count
-        total_result = await db.execute(select(func.count(SpiritualText.id)))
+        total_result = await db.execute(select(func.count(YggdrasilText.id)))
         total_texts = total_result.scalar()
         
         return {

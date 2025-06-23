@@ -116,7 +116,7 @@ app.dependency_overrides[AgentOrchestrator] = get_orchestrator
 def run_server():
     """Run the FastAPI server."""
     uvicorn.run(
-        "solomon.api.main:app",
+        "yggdrasil.api.main:app",
         host=settings.api_host,
         port=settings.api_port,
         reload=settings.api_reload,

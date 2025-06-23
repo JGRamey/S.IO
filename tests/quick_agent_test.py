@@ -8,12 +8,14 @@ import asyncio
 import json
 import sys
 import os
+import pytest
 
 # Add the project root to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT
 
+@pytest.mark.asyncio
 async def test_basic_functionality():
     """Test basic MCP agent functionality"""
     
@@ -26,7 +28,7 @@ async def test_basic_functionality():
     
     # Import here to avoid issues if MCP not available
     try:
-        from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
+        from yggdrasil_mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
     except ImportError:
         print("❌ MCP client not available - install MCP dependencies")
         return False

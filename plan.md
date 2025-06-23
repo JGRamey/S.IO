@@ -1,10 +1,10 @@
 # plan.md - Hybrid Database Schema Implementation Plan
 
-> **Project**: PostgreSQL + Qdrant Hybrid Database System  
-> **Target**: Claude Sonnet 4 Implementation Guide  
+> **Task**: PostgreSQL + Qdrant Hybrid Database System Upgrade 
+> **Info**: Claude Sonnet 4 Implementation Guide  
 > **Status**: Ready for Development
 
-## 🎯 Project Objectives
+## 🎯 Task Objectives
 
 **Primary Goal**: Build a scalable hybrid database system combining PostgreSQL's relational strengths with Qdrant's vector search capabilities.
 

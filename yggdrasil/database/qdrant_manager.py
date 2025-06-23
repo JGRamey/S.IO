@@ -10,7 +10,7 @@ from qdrant_client.http import models
 from qdrant_client.http.models import Distance, VectorParams, PointStruct
 from sentence_transformers import SentenceTransformer
 
-from solomon.config import settings
+from yggdrasil.config import settings
 
 
 logger = logging.getLogger(__name__)

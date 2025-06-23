@@ -36,7 +36,7 @@ def main():
     
     # Wait for service to be ready
     print("⏳ Waiting for service to be ready...")
-    max_retries = 30
+    max_retries = 10
     for i in range(max_retries):
         try:
             response = requests.get(f"{base_url}/health", timeout=5)
@@ -63,7 +63,7 @@ def main():
     ]
     
     print("\n🧪 Testing API Endpoints:")
-    print("-" * 30)
+    print("-" * 10)
     
     results = []
     for endpoint in endpoints_to_test:
