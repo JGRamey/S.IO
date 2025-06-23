@@ -473,30 +473,6 @@ class TextSourceAnalysis(Base):
     text = relationship("YggdrasilText")
 
 
-class LogicalFallacy(Base):
-    """Detected logical fallacies in texts."""
-    __tablename__ = "logical_fallacies"
-    
-    id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
-    
-    # Fallacy details
-    fallacy_type: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str] = mapped_column(Text, nullable=False)
-    context: Mapped[Optional[str]] = mapped_column(Text)
-    confidence_score: Mapped[float] = mapped_column(Float, default=0.0)
-    severity: Mapped[str] = mapped_column(String(50), default='moderate')  # minor, moderate, major
-    
-    # AI analysis metadata
-    detected_by: Mapped[str] = mapped_column(String(100), default='fallacy_detection_agent')
-    analysis_version: Mapped[str] = mapped_column(String(50), default='1.0')
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    
-    # Relationships
-    text = relationship("YggdrasilText")
-
-
 class Contradiction(Base):
     """Detected contradictions between texts."""
     __tablename__ = "contradictions"

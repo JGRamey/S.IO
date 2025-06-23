@@ -1,16 +1,20 @@
 """Database connection management."""
 
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, Session
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from yggdrasil.config import settings
 from .models import Base
 from .qdrant_manager import qdrant_manager
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseManager:
@@ -56,6 +60,7 @@ class DatabaseManager:
         """Drop all database tables."""
         Base.metadata.drop_all(bind=self.sync_engine)
     
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(Exception))
     async def initialize_hybrid_system(self):
         """Initialize both PostgreSQL and Qdrant systems."""
         try:
@@ -66,13 +71,14 @@ class DatabaseManager:
             async with self.async_session_factory() as session:
                 await session.execute("SELECT 1")
             
-            print("Hybrid database system initialized successfully")
+            logger.info("Hybrid database system initialized successfully")
             
         except Exception as e:
-            print(f"Failed to initialize hybrid database system: {e}")
+            logger.error(f"Failed to initialize hybrid database system: {e}")
             raise
     
     @asynccontextmanager
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(Exception))
     async def get_async_session(self) -> AsyncGenerator[AsyncSession, None]:
         """Get async database session."""
         async with self.async_session_factory() as session:
@@ -88,6 +94,7 @@ class DatabaseManager:
         """Get sync database session."""
         return self.sync_session_factory()
     
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(Exception))
     async def close_connections(self):
         """Close all database connections."""
         await self.async_engine.dispose()
@@ -100,6 +107,7 @@ db_manager = DatabaseManager()
 
 
 # Dependency for FastAPI to get database session
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(Exception))
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for FastAPI to get database session."""
     async with db_manager.get_async_session() as session:
@@ -107,6 +115,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 # Dependency for getting Qdrant manager
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(Exception))
 async def get_qdrant():
     """Dependency for getting Qdrant manager."""
     if not qdrant_manager.client:

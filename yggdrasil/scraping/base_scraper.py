@@ -6,11 +6,12 @@ from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime
+from asyncio import Semaphore
 import httpx
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
-from yggdrasil.database.models import SpiritualText, TextType, Language
+from yggdrasil.database.models import YggdrasilText, TextType, Language
 from ..database.connection import DatabaseManager
 
 
@@ -31,13 +32,18 @@ class ScrapedText:
 
 
 class BaseScraper(ABC):
-    """Base class for all spiritual text scrapers."""
+    """Base class for all spiritual text scrapers with rate limiting."""
     
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager: DatabaseManager, max_concurrent: int = 5, request_delay: float = 1.0):
         self.db_manager = db_manager
         self.logger = logging.getLogger(self.__class__.__name__)
         self.ua = UserAgent()
         self.session = None
+        
+        # Rate limiting
+        self.rate_limiter = Semaphore(max_concurrent)  # Max concurrent requests
+        self.request_delay = request_delay  # Delay between requests
+        self.max_retries = 3  # Maximum retry attempts
         
     async def __aenter__(self):
         """Async context manager entry."""
@@ -65,16 +71,18 @@ class BaseScraper(ABC):
     
     async def fetch_page(self, url: str, **kwargs) -> str:
         """Fetch a web page with error handling."""
-        try:
-            response = await self.session.get(url, **kwargs)
-            response.raise_for_status()
-            return response.text
-        except httpx.HTTPError as e:
-            self.logger.error(f"HTTP error fetching {url}: {e}")
-            raise
-        except Exception as e:
-            self.logger.error(f"Error fetching {url}: {e}")
-            raise
+        async with self.rate_limiter:
+            await asyncio.sleep(self.request_delay)
+            try:
+                response = await self.session.get(url, **kwargs)
+                response.raise_for_status()
+                return response.text
+            except httpx.HTTPError as e:
+                self.logger.error(f"HTTP error fetching {url}: {e}")
+                raise
+            except Exception as e:
+                self.logger.error(f"Error fetching {url}: {e}")
+                raise
     
     def parse_html(self, html: str, parser: str = 'html.parser') -> BeautifulSoup:
         """Parse HTML content."""
@@ -94,7 +102,7 @@ class BaseScraper(ABC):
                         continue
                     
                     # Create new spiritual text record
-                    spiritual_text = SpiritualText(
+                    spiritual_text = YggdrasilText(
                         title=text.title,
                         content=text.content,
                         text_type=text.text_type,
@@ -127,18 +135,18 @@ class BaseScraper(ABC):
         """Check if text already exists in database."""
         from sqlalchemy import select
         
-        query = select(SpiritualText).where(
-            SpiritualText.title == text.title,
-            SpiritualText.text_type == text.text_type,
-            SpiritualText.language == text.language
+        query = select(YggdrasilText).where(
+            YggdrasilText.title == text.title,
+            YggdrasilText.text_type == text.text_type,
+            YggdrasilText.language == text.language
         )
         
         if text.book:
-            query = query.where(SpiritualText.book == text.book)
+            query = query.where(YggdrasilText.book == text.book)
         if text.chapter:
-            query = query.where(SpiritualText.chapter == text.chapter)
+            query = query.where(YggdrasilText.chapter == text.chapter)
         if text.verse:
-            query = query.where(SpiritualText.verse == text.verse)
+            query = query.where(YggdrasilText.verse == text.verse)
         
         result = await session.execute(query)
         return result.scalar_one_or_none() is not None

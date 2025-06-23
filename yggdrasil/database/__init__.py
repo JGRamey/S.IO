@@ -1,8 +1,8 @@
-"""Database package for Solomon project."""
+"""Database package for Yggdrasil project."""
 
 from .models import (
     Base,
-    SpiritualText,
+    YggdrasilText,
     Translation,
     Doctrine,
     DoctrineReference,
@@ -18,7 +18,7 @@ from .connection import DatabaseManager, get_db_session
 
 __all__ = [
     "Base",
-    "SpiritualText",
+    "YggdrasilText",
     "Translation", 
     "Doctrine",
     "DoctrineReference",
