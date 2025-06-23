@@ -14,10 +14,10 @@ from pydantic import BaseModel, Field
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
 import torch
 
-from solomon.config import settings
-from solomon.database.connection import db_manager, get_qdrant
-from solomon.database.qdrant_manager import qdrant_manager
-from solomon.database.models import SpiritualText, FieldCategory, SubfieldCategory
+from yggdrasil.config import settings
+from yggdrasil.database.connection import db_manager, get_qdrant
+from yggdrasil.database.qdrant_manager import qdrant_manager
+from yggdrasil.database.models import YggdrasilText, FieldCategory, SubfieldCategory  # Updated to new database schema
 
 
 logger = logging.getLogger(__name__)
@@ -129,22 +129,22 @@ class BaseAgent(ABC):
                     # Get full text data from PostgreSQL
                     from sqlalchemy import select
                     db_result = await session.execute(
-                        select(SpiritualText).where(SpiritualText.qdrant_point_id == text_id)
+                        select(YggdrasilText).where(YggdrasilText.qdrant_point_id == text_id)
                     )
-                    spiritual_text = db_result.scalar_one_or_none()
+                    yggdrasil_text = db_result.scalar_one_or_none()
                     
-                    if spiritual_text:
+                    if yggdrasil_text:
                         enriched_result = {
-                            'id': spiritual_text.id,
-                            'title': spiritual_text.title,
-                            'content': spiritual_text.content,
-                            'text_type': spiritual_text.text_type.value,
-                            'language': spiritual_text.language.value,
-                            'book': spiritual_text.book,
-                            'chapter': spiritual_text.chapter,
-                            'verse': spiritual_text.verse,
-                            'author': spiritual_text.author,
-                            'source_url': spiritual_text.source_url,
+                            'id': yggdrasil_text.id,
+                            'title': yggdrasil_text.title,
+                            'content': yggdrasil_text.content,
+                            'text_type': yggdrasil_text.text_type.value,
+                            'language': yggdrasil_text.language.value,
+                            'book': yggdrasil_text.book,
+                            'chapter': yggdrasil_text.chapter,
+                            'verse': yggdrasil_text.verse,
+                            'author': yggdrasil_text.author,
+                            'source_url': yggdrasil_text.source_url,
                             'similarity_score': result['score'],
                             'qdrant_payload': result['payload']
                         }
@@ -267,8 +267,8 @@ Answer:"""
                 if query_type == "text_counts":
                     # Get text counts by type
                     result = await session.execute(
-                        select(SpiritualText.text_type, func.count(SpiritualText.id))
-                        .group_by(SpiritualText.text_type)
+                        select(YggdrasilText.text_type, func.count(YggdrasilText.id))
+                        .group_by(YggdrasilText.text_type)
                     )
                     return [{"text_type": row[0].value, "count": row[1]} for row in result]
                 
@@ -277,8 +277,8 @@ Answer:"""
                     from datetime import timedelta
                     yesterday = datetime.utcnow() - timedelta(days=1)
                     result = await session.execute(
-                        select(SpiritualText)
-                        .where(SpiritualText.created_at >= yesterday)
+                        select(YggdrasilText)
+                        .where(YggdrasilText.created_at >= yesterday)
                         .limit(10)
                     )
                     texts = result.scalars().all()

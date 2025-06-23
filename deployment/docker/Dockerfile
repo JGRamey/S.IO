@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy the requirements file into the container to leverage Docker's build cache
-COPY requirements.txt .
-COPY pyproject.toml .
+COPY config/requirements.txt .
+COPY config/pyproject.toml .
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -31,14 +31,16 @@ COPY . .
 RUN mkdir -p /app/logs /app/data
 
 # Set proper permissions
-RUN chmod +x /app/solomon/ || true
+RUN chmod +x /app/yggdrasil/ || true
 
 # Expose ports for the application
-EXPOSE 8000 5432
+EXPOSE 8000 5431
+## Changed to 5431 from 5432 - If this causes problems we can change it back to 5432 
+## Make sure the other docker files are using 5431:5431 first before changing back
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Default command - can be overridden by docker-compose
-CMD ["python", "-m", "solomon.main"]
+CMD ["python", "-m", "yggdrasil.api.main"]

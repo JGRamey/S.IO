@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-from solomon.config import settings
+from yggdrasil.config import settings
 from .base import BaseAgent, AgentResult
 
 

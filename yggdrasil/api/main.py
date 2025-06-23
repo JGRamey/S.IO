@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 
-from solomon.config import settings
-from solomon.database import get_db_session, DatabaseManager
-from solomon.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
+from yggdrasil.config import settings
+from yggdrasil.database import get_db_session, DatabaseManager
+from yggdrasil.agents.orchestrator import AgentOrchestrator
 from .routes import analysis, texts, health
 
 # Configure logging

@@ -9,7 +9,7 @@ from collections import defaultdict
 from langchain.schema import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
-from solomon.config import settings
+from yggdrasil.config import settings
 from .base import BaseAgent, AgentResult
 
 

@@ -6,8 +6,9 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from solomon.config import settings
-from solomon.agents.orchestrator import AgentOrchestrator
+from yggdrasil.config import settings
+from yggdrasil.agents.orchestrator import AgentOrchestrator
+from yggdrasil.database import db_manager
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ class HealthResponse(BaseModel):
 
 def get_orchestrator() -> AgentOrchestrator:
     """Get orchestrator dependency."""
-    from solomon.api.main import orchestrator
+    from yggdrasil.api.main import orchestrator
     return orchestrator
 
 
@@ -43,7 +44,7 @@ async def health_check(orchestrator: AgentOrchestrator = Depends(get_orchestrato
     # Check database health
     database_healthy = True
     try:
-        from solomon.database import db_manager
+        from yggdrasil.database import db_manager
         # Simple database connection test could be added here
     except Exception:
         database_healthy = False
@@ -90,7 +91,7 @@ async def agent_health(orchestrator: AgentOrchestrator = Depends(get_orchestrato
 async def database_health():
     """Check database health."""
     try:
-        from solomon.database import db_manager
+        from yggdrasil.database import db_manager
         
         # Test database connection
         async with db_manager.get_async_session() as session:

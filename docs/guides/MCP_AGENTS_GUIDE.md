@@ -45,12 +45,34 @@ The AI agents have been **completely upgraded** to work seamlessly with the MCP 
 - **Specialties**: Source verification, authenticity scoring, citation quality
 - **Best For**: Academic research, source validation, authenticity verification
 
-### **6. Smart Storage Agent** 🆕
+### **6. Bias Detection Agent** 🆕
+- **Purpose**: Detects various forms of bias in content including cognitive, cultural, and logical biases
+- **Specialties**: Confirmation bias, selection bias, cultural supremacy, gender bias, logical fallacies
+- **Best For**: Content quality assessment, academic review, fairness evaluation
+
+### **7. Bias Detection**
+```python
+result = await client.ai_content_analysis(
+    text="Content to analyze for bias...",
+    analysis_type="bias_detection",
+    domain="philosophy",
+    metadata={"sensitivity": "high"}
+)
+
+# Results include:
+# - detected_biases: List of biases found with confidence scores
+# - bias_summary: Overall bias assessment and categories
+# - recommendations: Suggestions for reducing bias
+# - overall_bias_score: Numerical bias score (0.0-1.0)
+# - analysis_metadata: Analysis details and statistics
+```
+
+### **8. Smart Storage Agent** 🆕
 - **Purpose**: AI-powered storage optimization and content analysis
 - **Specialties**: Storage strategy decisions, complexity analysis, performance optimization
 - **Best For**: Large datasets, performance optimization, intelligent storage
 
-### **7. Agent Orchestrator**
+### **9. Agent Orchestrator**
 - **Purpose**: Coordinates multiple agents for comprehensive analysis
 - **Specialties**: Multi-agent workflows, comprehensive insights, cross-analysis
 - **Best For**: Complex documents requiring multiple analysis types
@@ -168,6 +190,23 @@ result = await client.ai_content_analysis(
 # - recommendations: Suggestions for improvement
 ```
 
+### **Bias Detection**
+```python
+result = await client.ai_content_analysis(
+    text="Content to analyze for bias...",
+    analysis_type="bias_detection",
+    domain="philosophy",
+    metadata={"sensitivity": "high"}
+)
+
+# Results include:
+# - detected_biases: List of biases found with confidence scores
+# - bias_summary: Overall bias assessment and categories
+# - recommendations: Suggestions for reducing bias
+# - overall_bias_score: Numerical bias score (0.0-1.0)
+# - analysis_metadata: Analysis details and statistics
+```
+
 ### **Storage Optimization**
 ```python
 result = await client.ai_content_analysis(
@@ -274,10 +313,13 @@ themes = await client.ai_content_analysis(text, "theme_analysis")
 # Step 2: Detect fallacies  
 fallacies = await client.ai_content_analysis(text, "fallacy_detection")
 
-# Step 3: Optimize storage
+# Step 3: Detect bias
+bias = await client.ai_content_analysis(text, "bias_detection")
+
+# Step 4: Optimize storage
 storage = await client.ai_content_analysis(text, "storage_optimization")
 
-# Step 4: Comprehensive analysis
+# Step 5: Comprehensive analysis
 comprehensive = await client.ai_content_analysis(text, "comprehensive")
 ```
 
@@ -308,6 +350,7 @@ result = await client.ai_content_analysis(
 # Results will include:
 # - Philosophical themes identified
 # - Any logical fallacies detected
+# - Bias detection results
 # - Storage optimization recommendations
 # - Cross-cultural philosophical insights
 ```

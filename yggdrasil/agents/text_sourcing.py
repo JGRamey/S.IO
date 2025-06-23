@@ -10,8 +10,8 @@ import httpx
 from bs4 import BeautifulSoup
 from langchain.schema import HumanMessage, SystemMessage
 
-from solomon.config import settings
-from solomon.database.models import TextType, Language
+from yggdrasil.config import settings
+from yggdrasil.database.models import TextType, Language
 from .base import BaseAgent, AgentResult
 
 

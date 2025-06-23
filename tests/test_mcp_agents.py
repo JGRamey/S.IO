@@ -6,13 +6,18 @@ Tests all agent functionality through the MCP interface
 
 import asyncio
 import json
-from yggdrasil_mcp_client import YggdrasilMCPClient
+from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
+from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT, SAMPLE_PHILOSOPHICAL_TEXT, BIASED_TEXT_SAMPLE
 
 async def test_mcp_agents():
     """Test all MCP agent functionality"""
     
     print("🤖 TESTING MCP-INTEGRATED AI AGENTS")
     print("="*50)
+    
+    # Use test configuration
+    test_settings = get_test_settings()
+    print(f"Using test database: {test_settings.postgres_db}")
     
     client = YggdrasilMCPClient()
     
@@ -29,14 +34,9 @@ async def test_mcp_agents():
         
         # Test 2: Theme Analysis
         print("\n2. Testing Theme Analysis...")
-        theme_text = """
-        Love is the fundamental force that connects all beings across different spiritual traditions.
-        Whether we speak of divine love in Christianity, compassion in Buddhism, or ahimsa in Hinduism,
-        the universal theme of love transcends cultural boundaries and speaks to the human soul.
-        """
         
         result = await client.ai_content_analysis(
-            text=theme_text,
+            text=SAMPLE_SPIRITUAL_TEXT,
             analysis_type="theme_analysis",
             tradition="universal",
             domain="spirituality"
@@ -46,17 +46,12 @@ async def test_mcp_agents():
         
         # Test 3: Doctrine Analysis
         print("\n3. Testing Doctrine Analysis...")
-        doctrine_text = """
-        The doctrine of the Trinity in Christianity posits that God exists as three persons
-        - Father, Son, and Holy Spirit - while remaining one essence. This complex theological
-        concept has been central to Christian doctrine since the early church councils.
-        """
         
         result = await client.ai_content_analysis(
-            text=doctrine_text,
+            text=SAMPLE_SPIRITUAL_TEXT,
             analysis_type="doctrine_analysis",
             tradition="christianity",
-            domain="religion"
+            domain="theology"
         )
         
         client.print_analysis_summary(result)
@@ -97,19 +92,23 @@ async def test_mcp_agents():
         
         client.print_analysis_summary(result)
         
-        # Test 6: Comprehensive Analysis
-        print("\n6. Testing Comprehensive Analysis...")
-        complex_text = """
-        The concept of consciousness has been debated by philosophers for centuries.
-        Descartes argued for mind-body dualism, while modern materialists claim
-        consciousness emerges from neural activity. Buddhist philosophy approaches
-        consciousness differently, seeing it as fundamental and unconditioned.
-        However, some argue that all these views are based on false premises
-        and therefore invalid.
-        """
+        # Test 6: Bias Detection
+        print("\n6. Testing Bias Detection...")
         
         result = await client.ai_content_analysis(
-            text=complex_text,
+            text=BIASED_TEXT_SAMPLE,
+            analysis_type="bias_detection",
+            domain="philosophy",
+            tradition="western"
+        )
+        
+        client.print_analysis_summary(result)
+        
+        # Test 7: Comprehensive Analysis
+        print("\n7. Testing Comprehensive Analysis...")
+        
+        result = await client.ai_content_analysis(
+            text=SAMPLE_PHILOSOPHICAL_TEXT,
             analysis_type="comprehensive",
             domain="philosophy",
             tradition="mixed"
@@ -117,8 +116,8 @@ async def test_mcp_agents():
         
         client.print_analysis_summary(result)
         
-        # Test 7: Agent Performance
-        print("\n7. Getting Agent Performance Statistics...")
+        # Test 8: Agent Performance
+        print("\n8. Getting Agent Performance Statistics...")
         performance = await client.get_agent_performance()
         
         print("Agent Performance Report:")
@@ -156,6 +155,15 @@ async def quick_storage_optimization(text: str, url: str = None):
     client = YggdrasilMCPClient()
     try:
         result = await client.ai_content_analysis(text, "storage_optimization", url=url)
+        return result
+    finally:
+        await client.disconnect()
+
+async def quick_bias_detection(text: str, domain: str = "philosophy"):
+    """Quick bias detection analysis"""
+    client = YggdrasilMCPClient()
+    try:
+        result = await client.ai_content_analysis(text, "bias_detection", domain=domain)
         return result
     finally:
         await client.disconnect()

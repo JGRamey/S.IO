@@ -25,6 +25,10 @@ pyyaml>=6.0.1  # YAML parsing for configuration files
 sentence-transformers>=3.0.0  # For generating text embeddings
 spacy>=3.7.0  # NLP library for tokenization, NER, etc.
 nltk>=3.8.1  # Natural Language Toolkit for text processing
+langchain-community>=0.3.0  # LangChain community integrations
+langchain-huggingface>=0.3.0  # HuggingFace integrations for LangChain
+scikit-learn>=1.3.0  # Machine learning library for bias analysis
+regex>=2024.0.0  # Enhanced regular expressions for pattern matching
 
 # Asynchronous and event-driven programming
 aiohttp>=3.9.0  # Asynchronous HTTP client/server framework

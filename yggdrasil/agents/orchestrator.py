@@ -1,4 +1,4 @@
-"""Enhanced agent orchestrator for coordinating multiple Solomon agents with RAG integration."""
+"""Enhanced agent orchestrator for coordinating multiple Yggdrasil agents with RAG integration."""
 
 import asyncio
 import logging
@@ -8,7 +8,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from solomon.config import settings
+from yggdrasil.config import settings
 from .base import BaseAgent, AgentResult
 from .text_sourcing import TextSourcingAgent
 from .translation_tracking import TranslationTrackingAgent
@@ -64,18 +64,18 @@ class OrchestrationResult(BaseModel):
 
 
 class AgentOrchestrator(BaseAgent):
-    """Enhanced orchestrator that coordinates multiple Solomon agents with RAG integration."""
+    """Enhanced orchestrator that coordinates multiple Yggdrasil agents with RAG integration."""
     
     def __init__(self):
         super().__init__(
             name="AgentOrchestrator",
-            description="Orchestrates multiple Solomon agents for comprehensive spiritual text analysis with RAG capabilities",
+            description="Orchestrates multiple Yggdrasil agents for comprehensive spiritual text analysis with RAG capabilities",
             enable_rag=True
         )
         
         # Initialize agents
         self.agents = {}
-        self.logger = logging.getLogger("solomon.orchestrator")
+        self.logger = logging.getLogger("yggdrasil.orchestrator")
         
     async def initialize(self):
         """Initialize the orchestrator and all its agents."""

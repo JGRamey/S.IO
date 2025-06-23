@@ -18,7 +18,7 @@ Base = declarative_base()
 
 
 class TextType(str, Enum):
-    """Types of spiritual texts."""
+    """Types of yggdrasil texts."""
     BIBLE = "bible"
     QURAN = "quran"
     TORAH = "torah"
@@ -77,7 +77,7 @@ class FieldCategory(Base):
     
     # Relationships
     subfields = relationship("SubfieldCategory", back_populates="field")
-    texts = relationship("SpiritualText", back_populates="field_category")
+    texts = relationship("YggdrasilText", back_populates="field_category")
 
 
 class SubfieldCategory(Base):
@@ -92,16 +92,16 @@ class SubfieldCategory(Base):
     
     # Relationships
     field = relationship("FieldCategory", back_populates="subfields")
-    texts = relationship("SpiritualText", back_populates="subfield_category")
+    texts = relationship("YggdrasilText", back_populates="subfield_category")
     
     __table_args__ = (
         UniqueConstraint("field_id", "subfield_name"),
     )
 
 
-class SpiritualText(Base):
-    """Core spiritual text documents."""
-    __tablename__ = "spiritual_texts"
+class YggdrasilText(Base):  # Renamed from SpiritualText for consistency
+    """Core yggdrasil text documents."""
+    __tablename__ = "yggdrasil_texts"  # Updated table name
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -153,10 +153,10 @@ class SpiritualText(Base):
     themes = relationship("ThemeReference", back_populates="text")
     
     __table_args__ = (
-        Index("idx_spiritual_texts_type_lang", "text_type", "language"),
-        Index("idx_spiritual_texts_book_chapter", "book", "chapter"),
-        Index("idx_spiritual_texts_field_subfield", "field_category_id", "subfield_category_id"),
-        Index("idx_spiritual_texts_qdrant", "qdrant_point_id"),
+        Index("idx_yggdrasil_texts_type_lang", "text_type", "language"),
+        Index("idx_yggdrasil_texts_book_chapter", "book", "chapter"),
+        Index("idx_yggdrasil_texts_field_subfield", "field_category_id", "subfield_category_id"),
+        Index("idx_yggdrasil_texts_qdrant", "qdrant_point_id"),
     )
 
 
@@ -165,7 +165,7 @@ class Translation(Base):
     __tablename__ = "translations"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    original_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    original_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     
     # Translation details
     target_language: Mapped[Language] = mapped_column(String(50), nullable=False)
@@ -183,7 +183,7 @@ class Translation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    original_text = relationship("SpiritualText", back_populates="translations")
+    original_text = relationship("YggdrasilText", back_populates="translations")
 
 
 class Doctrine(Base):
@@ -213,7 +213,7 @@ class DoctrineReference(Base):
     __tablename__ = "doctrine_references"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     doctrine_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("doctrines.id"))
     
     # Reference details
@@ -223,7 +223,7 @@ class DoctrineReference(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    text = relationship("SpiritualText", back_populates="doctrines")
+    text = relationship("YggdrasilText", back_populates="doctrines")
     doctrine = relationship("Doctrine", back_populates="references")
     
     __table_args__ = (
@@ -254,7 +254,7 @@ class ThemeReference(Base):
     __tablename__ = "theme_references"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     theme_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("themes.id"))
     
     # Reference details
@@ -264,7 +264,7 @@ class ThemeReference(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    text = relationship("SpiritualText", back_populates="themes")
+    text = relationship("YggdrasilText", back_populates="themes")
     theme = relationship("Theme", back_populates="references")
     
     __table_args__ = (
@@ -277,7 +277,7 @@ class LogicalFallacy(Base):
     __tablename__ = "logical_fallacies"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     
     # Fallacy details
     fallacy_type: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -293,7 +293,7 @@ class LogicalFallacy(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class FallacyAnalysis(Base):
@@ -301,7 +301,7 @@ class FallacyAnalysis(Base):
     __tablename__ = "fallacy_analyses"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"), unique=True)
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"), unique=True)
     
     # Analysis results
     total_fallacies: Mapped[int] = mapped_column(Integer, default=0)
@@ -323,7 +323,7 @@ class FallacyAnalysis(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class DoctrineAnalysis(Base):
@@ -331,7 +331,7 @@ class DoctrineAnalysis(Base):
     __tablename__ = "doctrine_analyses"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"), unique=True)
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"), unique=True)
     
     # Analysis results
     total_doctrines: Mapped[int] = mapped_column(Integer, default=0)
@@ -356,7 +356,7 @@ class DoctrineAnalysis(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class ThemeAnalysis(Base):
@@ -364,7 +364,7 @@ class ThemeAnalysis(Base):
     __tablename__ = "theme_analyses"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"), unique=True)
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"), unique=True)
     
     # Analysis results
     total_themes: Mapped[int] = mapped_column(Integer, default=0)
@@ -392,7 +392,7 @@ class ThemeAnalysis(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class TranslationAnalysis(Base):
@@ -400,8 +400,8 @@ class TranslationAnalysis(Base):
     __tablename__ = "translation_analyses"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    original_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
-    translated_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    original_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
+    translated_text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     
     # Analysis results
     accuracy_score: Mapped[float] = mapped_column(Float, default=0.0)
@@ -428,8 +428,8 @@ class TranslationAnalysis(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    original_text = relationship("SpiritualText", foreign_keys=[original_text_id])
-    translated_text = relationship("SpiritualText", foreign_keys=[translated_text_id])
+    original_text = relationship("YggdrasilText", foreign_keys=[original_text_id])
+    translated_text = relationship("YggdrasilText", foreign_keys=[translated_text_id])
     
     __table_args__ = (
         UniqueConstraint("original_text_id", "translated_text_id"),
@@ -441,7 +441,7 @@ class TextSourceAnalysis(Base):
     __tablename__ = "text_source_analyses"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"), unique=True)
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"), unique=True)
     
     # Source analysis
     authenticity_score: Mapped[float] = mapped_column(Float, default=0.0)
@@ -470,7 +470,7 @@ class TextSourceAnalysis(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class LogicalFallacy(Base):
@@ -478,7 +478,7 @@ class LogicalFallacy(Base):
     __tablename__ = "logical_fallacies"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    text_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     
     # Fallacy details
     fallacy_type: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -494,7 +494,7 @@ class LogicalFallacy(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    text = relationship("SpiritualText")
+    text = relationship("YggdrasilText")
 
 
 class Contradiction(Base):
@@ -502,8 +502,8 @@ class Contradiction(Base):
     __tablename__ = "contradictions"
     
     id: Mapped[str] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    text1_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
-    text2_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("spiritual_texts.id"))
+    text1_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
+    text2_id: Mapped[str] = mapped_column(UUID(as_uuid=True), ForeignKey("yggdrasil_texts.id"))
     
     # Contradiction details
     description: Mapped[str] = mapped_column(Text, nullable=False)
@@ -516,8 +516,8 @@ class Contradiction(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
     
     # Relationships
-    text1 = relationship("SpiritualText", foreign_keys=[text1_id])
-    text2 = relationship("SpiritualText", foreign_keys=[text2_id])
+    text1 = relationship("YggdrasilText", foreign_keys=[text1_id])
+    text2 = relationship("YggdrasilText", foreign_keys=[text2_id])
 
 
 class AnalysisSession(Base):

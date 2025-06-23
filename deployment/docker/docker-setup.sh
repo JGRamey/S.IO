@@ -76,9 +76,12 @@ show_status() {
     
     echo ""
     print_status "Available endpoints:"
-    echo "  PostgreSQL: localhost:5432 (user: postgres, password: postgres, db: yggdrasil)"
+    echo "  PostgreSQL: localhost:5431 (user: postgres, db: yggdrasil)"
     echo "  Qdrant: http://localhost:6333"
     echo "  S.IO App: http://localhost:8000"
+    echo ""
+    echo "  API Documentation: http://localhost:8000/docs"
+    echo "  Qdrant Dashboard: http://localhost:6333/dashboard"
 }
 
 show_logs() {

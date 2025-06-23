@@ -1,4 +1,4 @@
-"""Command-line interface for Solomon project."""
+"""Command-line interface for Solomon project using the Yggdrasil backend."""
 
 import asyncio
 import json
@@ -12,15 +12,15 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 
-from solomon.config import settings
-from solomon.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
-from solomon.database import DatabaseManager
-from solomon.database.models import TextType
-from solomon.scraping.scraping_manager import ScrapingManager
+from yggdrasil.config import settings
+from yggdrasil.agents.orchestrator import AgentOrchestrator
+from yggdrasil.database import DatabaseManager
+from yggdrasil.database.models import TextType
+from yggdrasil.scraping.scraping_manager import ScrapingManager
 
 app = typer.Typer(
-    name="solomon",
-    help="Solomon-Sophia: AI-powered analysis of spiritual and religious texts",
+    name="yggdrasil",
+    help="Yggdrasil: AI-powered analysis of spiritual and religious texts",
     add_completion=False
 )
 console = Console()
@@ -37,7 +37,7 @@ def analyze(
     output: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file for results"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output")
 ):
-    """Analyze spiritual text using Solomon agents."""
+    """Analyze spiritual text using Yggdrasil agents."""
     
     # Get text content
     if file:
@@ -316,14 +316,14 @@ def serve(
     reload: bool = typer.Option(False, "--reload", help="Enable auto-reload"),
     log_level: str = typer.Option(settings.log_level.lower(), "--log-level", help="Log level")
 ):
-    """Start the Solomon API server."""
+    """Start the Yggdrasil API server."""
     import uvicorn
     
-    console.print(f"[green]Starting Solomon API server on {host}:{port}[/green]")
+    console.print(f"[green]Starting Yggdrasil API server on {host}:{port}[/green]")
     console.print(f"[dim]Docs available at: http://{host}:{port}/docs[/dim]")
     
     uvicorn.run(
-        "solomon.api.main:app",
+        "yggdrasil.api.main:app",
         host=host,
         port=port,
         reload=reload,
@@ -393,7 +393,7 @@ async def _health_check():
 @app.command()
 def config():
     """Show current configuration."""
-    table = Table(title="Solomon Configuration")
+    table = Table(title="Yggdrasil Configuration")
     table.add_column("Setting", style="cyan")
     table.add_column("Value", style="green")
     

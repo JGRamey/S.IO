@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from solomon.database import get_db_session
-from solomon.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
+from yggdrasil.database import get_db_session
+from yggdrasil.agents.orchestrator import AgentOrchestrator, OrchestrationRequest, AnalysisType
 
 router = APIRouter()
 
@@ -43,7 +43,7 @@ class AnalysisResponse(BaseModel):
 
 def get_orchestrator() -> AgentOrchestrator:
     """Get orchestrator dependency."""
-    from solomon.api.main import orchestrator
+    from yggdrasil.api.main import orchestrator
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not available")
     return orchestrator

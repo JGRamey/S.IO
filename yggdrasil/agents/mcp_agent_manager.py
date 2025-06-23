@@ -24,6 +24,7 @@ from .fallacy_detection import FallacyDetectionAgent
 from .translation_tracking import TranslationTrackingAgent
 from .text_sourcing import TextSourcingAgent
 from .smart_storage_agent import SmartStorageAgent
+from .bias_detection import BiasDetectionAgent
 from .orchestrator import AgentOrchestrator
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,7 @@ class AnalysisType(Enum):
     TRANSLATION_ANALYSIS = "translation_analysis"
     TEXT_SOURCING = "text_sourcing"
     STORAGE_OPTIMIZATION = "storage_optimization"
+    BIAS_DETECTION = "bias_detection"
     CONTENT_ANALYSIS = "content_analysis"
     CROSS_REFERENCE = "cross_reference"
     COMPREHENSIVE = "comprehensive"
@@ -100,7 +102,8 @@ class MCPAgentManager:
                 'doctrine_analysis': DoctrineAnalysisAgent(),
                 'fallacy_detection': FallacyDetectionAgent(),
                 'translation_tracking': TranslationTrackingAgent(),
-                'text_sourcing': TextSourcingAgent()
+                'text_sourcing': TextSourcingAgent(),
+                'bias_detection': BiasDetectionAgent()
             }
             
             # Initialize each agent
@@ -147,6 +150,9 @@ class MCPAgentManager:
             
             elif request.analysis_type == AnalysisType.COMPREHENSIVE:
                 result = await self._comprehensive_analysis(request)
+            
+            elif request.analysis_type == AnalysisType.BIAS_DETECTION:
+                result = await self._detect_bias(request)
             
             else:
                 raise ValueError(f"Unknown analysis type: {request.analysis_type}")
@@ -353,6 +359,26 @@ class MCPAgentManager:
             # Fallback to combined analysis
             return await self._analyze_content_intelligence(request)
     
+    async def _detect_bias(self, request: MCPAnalysisRequest) -> Dict[str, Any]:
+        """Detect bias in content"""
+        agent = self.agents['bias_detection']
+        
+        result = await agent.analyze_text(
+            text=request.text,
+            domain=request.domain,
+            tradition=request.tradition,
+            context=request.metadata.get('context', ''),
+            sensitivity=request.metadata.get('sensitivity', 'medium')
+        )
+        
+        return {
+            "detected_biases": result.data.get("detected_biases", []),
+            "bias_summary": result.data.get("bias_summary", {}),
+            "recommendations": result.data.get("recommendations", []),
+            "overall_bias_score": result.data.get("overall_bias_score", 0.0),
+            "analysis_metadata": result.data.get("analysis_metadata", {})
+        }
+    
     def _track_performance(self, analysis_type: AnalysisType, processing_time: float, success: bool):
         """Track performance metrics for analyses"""
         
@@ -438,6 +464,11 @@ class MCPAgentManager:
                 "type": "content_analysis",
                 "name": "Intelligent Content Analysis",
                 "description": "Combined analysis using multiple AI agents"
+            },
+            {
+                "type": "bias_detection",
+                "name": "Bias Detection",
+                "description": "Detect bias in content"
             },
             {
                 "type": "comprehensive",

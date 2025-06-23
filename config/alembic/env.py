@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # Import your models
-from solomon.database.models import Base
-from solomon.config import settings
+from yggdrasil.database.models import Base
+from yggdrasil.config import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

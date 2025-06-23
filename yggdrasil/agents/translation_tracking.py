@@ -9,8 +9,8 @@ from collections import defaultdict
 from langchain.schema import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
-from solomon.config import settings
-from solomon.database.models import Language
+from yggdrasil.config import settings
+from yggdrasil.database.models import Language
 from .base import BaseAgent, AgentResult
 
 

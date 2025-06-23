@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     
     # Application
     app_name: str = "Solomon-Sophia"
-    debug: bool = False
+    debug: bool = Field(default=False, env="DEBUG")
     log_level: str = "INFO"
     
     # API
@@ -28,24 +28,46 @@ class Settings(BaseSettings):
     api_port: int = 8000
     api_reload: bool = False
     
-    # Database
-    database_url: str = Field(
-        default="postgresql://postgres:JGRsolomon0924$@localhost:5432/Solomon",
-        description="PostgreSQL database URL",
-        env="DATABASE_URL"
-    )
+    # Database connection details - use environment variables
+    postgres_host: str = Field(default="localhost", env="POSTGRES_HOST")
+    postgres_port: int = Field(default=5431, env="POSTGRES_PORT")  # Updated to use 5431 as default
+    postgres_user: str = Field(default="postgres", env="POSTGRES_USER")
+    postgres_password: str = Field(default="", env="POSTGRES_PASSWORD")
+    postgres_db: str = Field(default="yggdrasil", env="POSTGRES_DB")
+    
+    @property
+    def database_url(self) -> str:
+        """Generate database URL from individual components."""
+        return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
     
     # Vector Database
-    qdrant_host: str = "localhost"
-    qdrant_port: int = 6333
+    qdrant_host: str = Field(default="localhost", env="QDRANT_HOST")
+    qdrant_port: int = Field(default=6333, env="QDRANT_PORT")
     qdrant_collection_name: str = "spiritual_texts"
     
+    @property
+    def qdrant_url(self) -> str:
+        """Generate Qdrant URL from individual components."""
+        return f"http://{self.qdrant_host}:{self.qdrant_port}"
+    
     # Hugging Face Models
-    hf_model_name: str = "microsoft/DialoGPT-large"  # Local LLM model
-    hf_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"  # Local embedding model
-    embedding_dimension: int = 384  # Dimension for all-MiniLM-L6-v2
-    hf_cache_dir: Optional[str] = None  # Uses default HF cache
-    use_local_models_only: bool = True  # Force local models only
+    hf_model_name: str = Field(default="microsoft/DialoGPT-large", env="HF_MODEL_NAME")  # Local LLM model
+    hf_embedding_model: str = Field(default="sentence-transformers/all-MiniLM-L6-v2", env="HF_EMBEDDING_MODEL")  # Local embedding model
+    embedding_dimension: int = Field(default=384, env="EMBEDDING_DIMENSION")  # Dimension for all-MiniLM-L6-v2
+    hf_cache_dir: Optional[str] = Field(default=None, env="HF_CACHE_DIR")  # Uses default HF cache
+    use_local_models_only: bool = Field(default=True, env="USE_LOCAL_MODELS_ONLY")  # Force local models only
+    
+    # Security
+    secret_key: str = Field(default="dev-secret-key", env="SECRET_KEY")
+    
+    # RAG Configuration
+    rag_chunk_size: int = Field(default=1000, env="RAG_CHUNK_SIZE")
+    rag_chunk_overlap: int = Field(default=200, env="RAG_CHUNK_OVERLAP")
+    rag_top_k: int = Field(default=5, env="RAG_TOP_K")
+    
+    # Performance
+    max_workers: int = Field(default=4, env="MAX_WORKERS")
+    cache_ttl: int = Field(default=3600, env="CACHE_TTL")
     
     # TensorFlow (optional for advanced models)
     use_tensorflow: bool = False

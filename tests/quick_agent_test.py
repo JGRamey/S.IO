@@ -6,6 +6,13 @@ Simplified test to verify agents work with MCP server
 
 import asyncio
 import json
+import sys
+import os
+
+# Add the project root to the path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT
 
 async def test_basic_functionality():
     """Test basic MCP agent functionality"""
@@ -13,9 +20,13 @@ async def test_basic_functionality():
     print("🧪 QUICK MCP AGENT TEST")
     print("="*30)
     
+    # Use test configuration
+    test_settings = get_test_settings()
+    print(f"Test Environment: {test_settings.postgres_db}")
+    
     # Import here to avoid issues if MCP not available
     try:
-        from yggdrasil_mcp_client import YggdrasilMCPClient
+        from mcp.client.yggdrasil_mcp_client import YggdrasilMCPClient
     except ImportError:
         print("❌ MCP client not available - install MCP dependencies")
         return False
@@ -23,7 +34,7 @@ async def test_basic_functionality():
     client = YggdrasilMCPClient()
     
     try:
-        print("1. Connecting to MCP server...")
+        print("\n1. Connecting to MCP server...")
         await client.connect()
         print("✅ Connected successfully")
         
@@ -33,7 +44,7 @@ async def test_basic_functionality():
         
         print("\n3. Testing theme analysis...")
         result = await client.ai_content_analysis(
-            text="Love and compassion are universal themes in spiritual traditions.",
+            text=SAMPLE_SPIRITUAL_TEXT,
             analysis_type="theme_analysis"
         )
         
