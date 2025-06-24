@@ -69,7 +69,7 @@ class DatabaseManager:
             
             # Test PostgreSQL connection
             async with self.async_session_factory() as session:
-                await session.execute("SELECT 1")
+                await session.execute(text("SELECT 1"))
             
             logger.info("Hybrid database system initialized successfully")
             

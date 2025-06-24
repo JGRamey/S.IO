@@ -4,9 +4,11 @@ import pytest
 import asyncio
 from yggdrasil.database.connection import DatabaseManager
 from yggdrasil.agents.mcp_agent_manager import MCPAgentManager
-from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT, SAMPLE_PHILOSOPHICAL_TEXT
+from test_config import get_test_settings, SAMPLE_SPIRITUAL_TEXT, SAMPLE_PHILOSOPHICAL_TEXT, TEST_DATABASE_URL, TEST_QDRANT_URL
+from sqlalchemy import text
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_full_system_integration():
     """Test complete system integration."""
@@ -20,7 +22,10 @@ async def test_full_system_integration():
     
     try:
         # Test agent initialization
-        agent_manager = MCPAgentManager()
+        agent_manager = MCPAgentManager(
+            postgres_url=TEST_DATABASE_URL,
+            qdrant_url=TEST_QDRANT_URL
+        )
         await agent_manager.initialize()
         
         # Test analysis pipeline
@@ -32,12 +37,13 @@ async def test_full_system_integration():
         assert result.success
         assert result.data is not None
         
-        print("✅ Full system integration test passed")
+        print(" Full system integration test passed")
         
     finally:
         await db_manager.close_connections()
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_database_hybrid_system():
     """Test PostgreSQL + Qdrant hybrid system."""
@@ -48,7 +54,7 @@ async def test_database_hybrid_system():
     try:
         # Test PostgreSQL connection
         async with db_manager.get_async_session() as session:
-            result = await session.execute("SELECT 1 as test")
+            result = await session.execute(text("SELECT 1 as test"))
             row = result.fetchone()
             assert row[0] == 1
         
@@ -56,17 +62,21 @@ async def test_database_hybrid_system():
         from yggdrasil.database.qdrant_manager import qdrant_manager
         await qdrant_manager.initialize()
         
-        print("✅ Hybrid database system test passed")
+        print(" Hybrid database system test passed")
         
     finally:
         await db_manager.close_connections()
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio
 async def test_agent_pipeline():
     """Test complete AI agent pipeline."""
     
-    agent_manager = MCPAgentManager()
+    agent_manager = MCPAgentManager(
+        postgres_url=TEST_DATABASE_URL,
+        qdrant_url=TEST_QDRANT_URL
+    )
     await agent_manager.initialize()
     
     # Test multiple analysis types
@@ -81,9 +91,10 @@ async def test_agent_pipeline():
         assert result.success, f"Failed for analysis type: {analysis_type}"
         assert result.data is not None
         
-        print(f"✅ {analysis_type} test passed")
+        print(f" {analysis_type} test passed")
 
 
+@pytest.mark.integration
 @pytest.mark.asyncio 
 async def test_configuration_loading():
     """Test configuration loading and validation."""
@@ -106,7 +117,7 @@ async def test_configuration_loading():
     assert "http://" in qdrant_url
     assert settings.qdrant_host in qdrant_url
     
-    print("✅ Configuration loading test passed")
+    print(" Configuration loading test passed")
 
 
 if __name__ == "__main__":

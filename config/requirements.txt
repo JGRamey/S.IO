@@ -7,12 +7,12 @@ langchain>=0.2.0  # For building context-aware AI applications
 openai>=1.14.0  # OpenAI API for leveraging GPT models
 transformers>=4.44.0  # Hugging Face transformers for NLP models
 torch>=2.4.0  # PyTorch for deep learning models
-tensorflow>=2.19.0  # TensorFlow for machine learning - Python 3.12 compatible
+# tensorflow>=2.19.0  # TensorFlow REMOVED - 1.1GB, not used in code as of now - Will in the future
 
 # Agent memory and context management
-faiss-cpu>=1.8.0  # For efficient vector search and memory storage
-pinecone-client>=5.0.0  # Vector database for scalable memory
-chromadb>=0.5.0  # Open-source vector database for embeddings
+# faiss-cpu>=1.8.0  # REMOVED - You're using Qdrant for vector search
+# pinecone-client>=5.0.0  # REMOVED - You're using Qdrant 
+# chromadb>=0.5.0  # REMOVED - You're using Qdrant
 qdrant-client>=1.7.0  # Qdrant vector database client
 
 # Data processing and utilities
@@ -54,6 +54,7 @@ httpx>=0.25.0  # Modern HTTP client for async requests
 
 # Database and ORM (Python 3.12 compatible)
 sqlalchemy>=2.0.23  # SQL toolkit and ORM
+greenlet>=3.0.0  # Required for SQLAlchemy async support
 alembic>=1.13.0  # Database migration tool
 asyncpg>=0.29.0  # Async PostgreSQL adapter
 psycopg2-binary>=2.9.9  # PostgreSQL adapter
@@ -63,8 +64,8 @@ typer>=0.9.0  # Modern CLI framework
 rich>=13.7.0  # Rich text and beautiful formatting in terminal
 
 # Optional: For building interactive interfaces (e.g., for testing agents)
-streamlit>=1.35.0  # For creating web-based interfaces
-gradio>=4.44.0  # For building interactive UI for AI models
+# streamlit>=1.35.0  # REMOVED - Optional web interface, saves 30MB
+# gradio>=4.44.0  # REMOVED - Optional UI for AI models, saves 170MB
 
 # Optional: For logging and monitoring
 loguru>=0.7.0  # Simplified logging for debugging agents

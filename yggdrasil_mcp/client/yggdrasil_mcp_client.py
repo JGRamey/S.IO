@@ -32,6 +32,7 @@ class YggdrasilMCPClient:
     
     def __init__(self, server_path: str = None):
         self.server_path = server_path or "/Users/grant/Desktop/Solomon/Database/S.IO/yggdrasil_mcp_server.py"
+        self.context_manager = None
         self.session = None
         
     async def connect(self):
@@ -42,7 +43,12 @@ class YggdrasilMCPClient:
                 args=[self.server_path]
             )
             
-            self.session = await stdio_client(server_params).__aenter__()
+            self.context_manager = stdio_client(server_params)
+            # The stdio_client context manager returns (read, write) streams
+            # We need to create the ClientSession from these streams
+            read_stream, write_stream = await self.context_manager.__aenter__()
+            self.session = ClientSession(read_stream, write_stream)
+            await self.session.__aenter__()
             logger.info("Connected to Yggdrasil MCP server")
             
         except Exception as e:
@@ -53,6 +59,10 @@ class YggdrasilMCPClient:
         """Disconnect from the MCP server"""
         if self.session:
             await self.session.__aexit__(None, None, None)
+            self.session = None
+        if self.context_manager:
+            await self.context_manager.__aexit__(None, None, None)
+            self.context_manager = None
             logger.info("Disconnected from Yggdrasil MCP server")
     
     async def analyze_url(self, url: str) -> ProcessingResult:
